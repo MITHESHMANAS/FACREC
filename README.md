@@ -26,17 +26,14 @@ A real-time Face Recognition System built using **Python**, **OpenCV**, **NumPy*
 
 ## 📂 Project Structure
 
-```
 FACREC/
 │
-├── facial_data.py          # Face data collection script
-├── face_recognition.py     # Face recognition script
-├── face_dataset/           # Stored face datasets (.npy files)
-├── data.xml                # Haar Cascade XML file
-├── README.md
-│
-└── requirements.txt
-```
+├── face_data.py                # Collect face dataset
+├── face_recognition.py         # Real-time face recognition
+├── face_detection.py           # Face detection script
+├── face_dataset/               # Stored face data (.npy files)
+├── haarcascade_frontalface_alt.xml
+└── README.md
 
 ---
 
