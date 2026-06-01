@@ -17,7 +17,7 @@ A real-time Face Recognition System built using **Python**, **OpenCV**, **NumPy*
 
 ## 🛠️ Technologies Used
 
-- Python
+- Python 3.14.2
 - OpenCV
 - NumPy
 - Machine Learning (KNN Algorithm)
