@@ -123,4 +123,4 @@ else:
     print("No face data collected.")
 
 cap.release()
-cv2.destroyAllWindows()
+cv2.destroyAllWindows(x )
