@@ -4,11 +4,13 @@ import os
 import sqlite3
 from datetime import datetime
 
+CURRENT_SUBJECT = "AI"
+
 #############################
 # ATTENDANCE FUNCTION
 #############################
 
-def markAttendance(name):
+def markAttendance(name, subject):
 
     conn = sqlite3.connect("attendance.db")
     cursor = conn.cursor()
@@ -18,28 +20,15 @@ def markAttendance(name):
     date = now.strftime("%d-%m-%Y")
     time = now.strftime("%H:%M:%S")
 
-    # Check if student exists
-    cursor.execute(
-        "SELECT * FROM students WHERE name=?",
-        (name,)
-    )
-
-    student = cursor.fetchone()
-
-    if student is None:
-        cursor.execute(
-            "INSERT INTO students(name) VALUES(?)",
-            (name,)
-        )
-        conn.commit()
-
-    # Check attendance already marked today
     cursor.execute(
         """
-        SELECT * FROM attendance
-        WHERE student_name=? AND date=?
+        SELECT *
+        FROM attendance
+        WHERE student_name=?
+        AND subject=?
+        AND date=?
         """,
-        (name, date)
+        (name, subject, date)
     )
 
     result = cursor.fetchone()
@@ -48,18 +37,32 @@ def markAttendance(name):
 
         cursor.execute(
             """
-            INSERT INTO attendance(student_name, date, time)
-            VALUES (?, ?, ?)
+            INSERT INTO attendance
+            (
+                student_name,
+                subject,
+                date,
+                time,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (name, date, time)
+            (
+                name,
+                subject,
+                date,
+                time,
+                "Present"
+            )
         )
 
         conn.commit()
 
-        print(f"[INFO] Attendance Marked : {name}")
+        print(
+            f"[INFO] {name} marked present in {subject}"
+        )
 
     conn.close()
-
 
 #############################
 # KNN FUNCTIONS
@@ -208,7 +211,10 @@ while True:
         name = names[int(out)]
 
         # Mark Attendance
-        markAttendance(name)
+        markAttendance(
+            name,
+            CURRENT_SUBJECT
+        )
 
         # Draw Name
         cv2.putText(
