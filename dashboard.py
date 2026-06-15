@@ -34,6 +34,9 @@ def view_attendance():
 def attendance_report():
     os.system("python attendance_report.py")
 
+def analytics():
+    os.system("python analytics.py")
+
 
 tk.Button(
     root,
@@ -82,5 +85,13 @@ tk.Button(
     height=2,
     command=root.destroy
 ).pack(pady=20)
+
+tk.Button(
+    root,
+    text="Analytics",
+    width=25,
+    height=2,
+    command=analytics
+).pack(pady=5)
 
 root.mainloop()
