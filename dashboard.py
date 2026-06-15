@@ -1,19 +1,53 @@
 import tkinter as tk
 import os
 
+from dashboard_stats import get_stats
+
+# Get Dashboard Statistics
+students, attendance = get_stats()
+
 root = tk.Tk()
 
 root.title("FACREC Dashboard")
-root.geometry("500x500")
+root.geometry("600x650")
+
+# ==========================
+# TITLE
+# ==========================
 
 title = tk.Label(
     root,
     text="FACREC Attendance System",
-    font=("Arial", 18, "bold")
+    font=("Arial", 20, "bold")
 )
 
 title.pack(pady=20)
 
+# ==========================
+# LIVE STATISTICS
+# ==========================
+
+tk.Label(
+    root,
+    text=f"Total Students : {students}",
+    font=("Arial", 12)
+).pack()
+
+tk.Label(
+    root,
+    text=f"Today's Attendance : {attendance}",
+    font=("Arial", 12)
+).pack()
+
+tk.Label(
+    root,
+    text="Current Subject : AI",
+    font=("Arial", 12)
+).pack(pady=(0, 20))
+
+# ==========================
+# FUNCTIONS
+# ==========================
 
 def register_student():
     os.system("python register_student.py")
@@ -34,14 +68,19 @@ def view_attendance():
 def attendance_report():
     os.system("python attendance_report.py")
 
+
 def analytics():
     os.system("python analytics.py")
 
 
+# ==========================
+# BUTTONS
+# ==========================
+
 tk.Button(
     root,
     text="Register Student",
-    width=25,
+    width=30,
     height=2,
     command=register_student
 ).pack(pady=5)
@@ -49,7 +88,7 @@ tk.Button(
 tk.Button(
     root,
     text="Start Attendance",
-    width=25,
+    width=30,
     height=2,
     command=start_attendance
 ).pack(pady=5)
@@ -57,7 +96,7 @@ tk.Button(
 tk.Button(
     root,
     text="View Students",
-    width=25,
+    width=30,
     height=2,
     command=view_students
 ).pack(pady=5)
@@ -65,7 +104,7 @@ tk.Button(
 tk.Button(
     root,
     text="View Attendance",
-    width=25,
+    width=30,
     height=2,
     command=view_attendance
 ).pack(pady=5)
@@ -73,25 +112,25 @@ tk.Button(
 tk.Button(
     root,
     text="Attendance Report",
-    width=25,
+    width=30,
     height=2,
     command=attendance_report
 ).pack(pady=5)
 
 tk.Button(
     root,
-    text="Exit",
-    width=25,
-    height=2,
-    command=root.destroy
-).pack(pady=20)
-
-tk.Button(
-    root,
     text="Analytics",
-    width=25,
+    width=30,
     height=2,
     command=analytics
 ).pack(pady=5)
+
+tk.Button(
+    root,
+    text="Exit",
+    width=30,
+    height=2,
+    command=root.destroy
+).pack(pady=20)
 
 root.mainloop()
