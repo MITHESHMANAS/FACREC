@@ -72,6 +72,11 @@ def attendance_report():
 def analytics():
     os.system("python analytics.py")
 
+def pie_chart():
+    os.system("python attendance_pie_chart.py")
+
+def bar_chart():
+    os.system("python attendance_bar_chart.py")
 
 # ==========================
 # BUTTONS
@@ -132,5 +137,21 @@ tk.Button(
     height=2,
     command=root.destroy
 ).pack(pady=20)
+
+tk.Button(
+    root,
+    text="Attendance Pie Chart",
+    width=30,
+    height=2,
+    command=pie_chart
+).pack(pady=5)
+
+tk.Button(
+    root,
+    text="Attendance Bar Chart",
+    width=30,
+    height=2,
+    command=bar_chart
+).pack(pady=5)
 
 root.mainloop()
