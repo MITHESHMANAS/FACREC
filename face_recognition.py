@@ -4,11 +4,18 @@ import os
 import sqlite3
 from datetime import datetime
 
+# =====================================
+# CONFIGURATION
+# =====================================
+
 CURRENT_SUBJECT = "AI"
 
-#############################
+# Tune after testing
+UNKNOWN_THRESHOLD = 10000
+
+# =====================================
 # ATTENDANCE FUNCTION
-#############################
+# =====================================
 
 def markAttendance(name, subject):
 
@@ -64,12 +71,16 @@ def markAttendance(name, subject):
 
     conn.close()
 
-#############################
+
+# =====================================
 # KNN FUNCTIONS
-#############################
+# =====================================
 
 def distance(v1, v2):
-    return np.sqrt(((v1 - v2) ** 2).sum())
+
+    return np.sqrt(
+        ((v1 - v2) ** 2).sum()
+    )
 
 
 def knn(train, test, k=5):
@@ -85,40 +96,60 @@ def knn(train, test, k=5):
 
         dist.append([d, iy])
 
-    dk = sorted(dist, key=lambda x: x[0])[:k]
+    dk = sorted(
+        dist,
+        key=lambda x: x[0]
+    )[:k]
 
     labels = np.array(dk)[:, -1]
 
-    output = np.unique(labels, return_counts=True)
+    output = np.unique(
+        labels,
+        return_counts=True
+    )
 
     index = np.argmax(output[1])
 
-    return output[0][index]
+    predicted_label = output[0][index]
+
+    # Average distance of top-k neighbors
+    average_distance = np.mean(
+        [item[0] for item in dk]
+    )
+
+    return predicted_label, average_distance
 
 
-#############################
+# =====================================
 # CAMERA & FACE CASCADE
-#############################
+# =====================================
 
 cap = cv2.VideoCapture(0)
 
 face_cascade = cv2.CascadeClassifier(
     "haarcascade_frontalface_alt.xml"
 )
+
 if face_cascade.empty():
-    print("ERROR: Haar Cascade File Not Found")
+
+    print(
+        "ERROR: Haar Cascade File Not Found"
+    )
+
     exit()
+
+# =====================================
+# LOAD DATASET
+# =====================================
 
 dataset_path = "./face_dataset/"
 
 face_data = []
 labels = []
-class_id = 0
-names = {}
 
-#############################
-# LOAD DATASET
-#############################
+class_id = 0
+
+names = {}
 
 for fx in os.listdir(dataset_path):
 
@@ -127,7 +158,10 @@ for fx in os.listdir(dataset_path):
         names[class_id] = fx[:-4]
 
         data_item = np.load(
-            os.path.join(dataset_path, fx)
+            os.path.join(
+                dataset_path,
+                fx
+            )
         )
 
         face_data.append(data_item)
@@ -150,19 +184,32 @@ face_labels = np.concatenate(
     axis=0
 ).reshape((-1, 1))
 
-print("Face Dataset Shape :", face_dataset.shape)
-print("Face Labels Shape :", face_labels.shape)
+print(
+    "Face Dataset Shape :",
+    face_dataset.shape
+)
+
+print(
+    "Face Labels Shape :",
+    face_labels.shape
+)
 
 trainset = np.concatenate(
-    (face_dataset, face_labels),
+    (
+        face_dataset,
+        face_labels
+    ),
     axis=1
 )
 
-print("Trainset Shape :", trainset.shape)
+print(
+    "Trainset Shape :",
+    trainset.shape
+)
 
-#############################
+# =====================================
 # START RECOGNITION
-#############################
+# =====================================
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -196,43 +243,78 @@ while True:
         ]
 
         try:
+
             face_section = cv2.resize(
                 face_section,
                 (100, 100)
             )
+
         except:
+
             continue
 
-        out = knn(
+        # ==========================
+        # PREDICTION
+        # ==========================
+
+        out, distance_score = knn(
             trainset,
             face_section.flatten()
         )
 
-        name = names[int(out)]
-
-        # Mark Attendance
-        markAttendance(
-            name,
-            CURRENT_SUBJECT
+        confidence = max(
+            0,
+            100 * (
+                1 -
+                distance_score /
+                (UNKNOWN_THRESHOLD * 1.5)
+            )
         )
 
-        # Draw Name
+        if distance_score > UNKNOWN_THRESHOLD:
+
+            name = "UNKNOWN"
+
+        else:
+
+            name = names[int(out)]
+
+            markAttendance(
+                name,
+                CURRENT_SUBJECT
+            )
+
+        # ==========================
+        # DRAW NAME + CONFIDENCE
+        # ==========================
+
         cv2.putText(
             frame,
-            name,
-            (x, y-10),
+            f"{name} ({confidence:.1f}%)",
+            (x, y - 10),
             font,
-            1,
+            0.8,
             (255, 0, 0),
             2,
             cv2.LINE_AA
         )
 
-        # Draw Rectangle
+        # Debug Distance
+        cv2.putText(
+            frame,
+            f"D:{int(distance_score)}",
+            (x, y + h + 20),
+            font,
+            0.6,
+            (0, 255, 0),
+            2
+        )
+
+        # Face Rectangle
         cv2.rectangle(
             frame,
             (x, y),
-            (x+w, y+h),
+            (x + w, y + h),
             (255, 255, 255),
             2
         )
