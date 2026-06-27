@@ -1,6 +1,6 @@
-import sqlite3
+from database import get_connection
 
-conn = sqlite3.connect("attendance.db")
+conn = get_connection()
 cursor = conn.cursor()
 
 name = input("Enter Name : ")

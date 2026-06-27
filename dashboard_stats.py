@@ -3,8 +3,8 @@ from datetime import datetime
 
 
 def get_stats():
-
-    conn = sqlite3.connect("attendance.db")
+    from database import get_connection
+    conn = get_connection()
     cursor = conn.cursor()
 
     # Total Students
