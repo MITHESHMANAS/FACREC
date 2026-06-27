@@ -77,6 +77,12 @@ def pie_chart():
 
 def bar_chart():
     os.system("python attendance_bar_chart.py")
+    
+def attendance_percentage():
+    os.system("python attendance_percentage_gui.py")
+    
+def attendance_shortage():
+    os.system("python attendance_shortage.py")
 
 # ==========================
 # BUTTONS
@@ -120,6 +126,22 @@ tk.Button(
     width=30,
     height=2,
     command=attendance_report
+).pack(pady=5)
+
+tk.Button(
+    root,
+    text="Attendance Percentage",
+    width=30,
+    height=2,
+    command=attendance_percentage
+).pack(pady=5)
+
+tk.Button(
+    root,
+    text="Attendance Shortage",
+    width=30,
+    height=2,
+    command=attendance_shortage
 ).pack(pady=5)
 
 tk.Button(
