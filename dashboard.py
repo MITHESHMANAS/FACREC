@@ -4,7 +4,7 @@ import os
 from dashboard_stats import get_stats
 
 # Get Dashboard Statistics
-students, attendance = get_stats()
+students, attendance, overall, shortage = get_stats()
 
 root = tk.Tk()
 
@@ -84,6 +84,9 @@ def attendance_percentage():
 def attendance_shortage():
     os.system("python attendance_shortage.py")
 
+def student_profile():
+    os.system("python student_profile.py")
+    
 # ==========================
 # BUTTONS
 # ==========================
@@ -95,6 +98,25 @@ tk.Button(
     height=2,
     command=register_student
 ).pack(pady=5)
+tk.Button(
+    root,
+    text="Student Profile",
+    width=30,
+    height=2,
+    command=student_profile
+).pack(pady=5)
+
+tk.Label(
+    root,
+    text=f"Overall Attendance : {overall}%",
+    font=("Arial", 12)
+).pack()
+
+tk.Label(
+    root,
+    text=f"Students Below 75% : {shortage}",
+    font=("Arial", 12)
+).pack()
 
 tk.Button(
     root,
