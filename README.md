@@ -1,169 +1,174 @@
-# FACREC - Face Recognition System
+# 🎓 FACREC – Face Recognition Attendance Management System
 
-A real-time Face Recognition System built using **Python**, **OpenCV**, **NumPy**, and **K-Nearest Neighbors (KNN)**. This project captures facial data from a webcam, trains a recognition model using stored face datasets, and identifies faces in real time.
-
----
-
-## 📌 Features
-
-- Real-time face detection using Haar Cascade Classifier
-- Face dataset collection from webcam
-- Face recognition using K-Nearest Neighbors (KNN)
-- Multiple user support
-- Fast and lightweight implementation
-- Easy to extend with advanced ML/DL models
+> A modular Face Recognition Attendance Management System built using Python, OpenCV, SQLite, and Tkinter with a service-oriented architecture.
 
 ---
 
-## 🛠️ Technologies Used
+## 📌 Overview
 
-- Python 3.14.2
+FACREC is a desktop-based attendance management system that automates student attendance using real-time face recognition. The system captures student face datasets, recognizes students through a webcam using a K-Nearest Neighbors (KNN) classifier, and records attendance into an SQLite database.
+
+The project follows a modular service-layer architecture to improve maintainability, readability, and scalability.
+
+---
+
+# ✨ Features
+
+- 🔐 Secure Login System
+- 👨‍🎓 Student Registration
+- 📷 Face Dataset Collection
+- 🤖 Real-Time Face Recognition
+- ✅ Automatic Attendance Marking
+- 👤 Student Profile Search
+- 📊 Attendance Percentage Analysis
+- ⚠️ Attendance Shortage Report
+- 📈 Dashboard Analytics
+- 📄 PDF Attendance Report
+- 🥧 Attendance Pie Chart
+- 📊 Attendance Bar Chart
+
+---
+
+# 🛠 Tech Stack
+
+### Programming Language
+- Python
+
+### Computer Vision
 - OpenCV
-- NumPy
-- Machine Learning (KNN Algorithm)
+- Haar Cascade Classifier
+
+### Machine Learning
+- K-Nearest Neighbors (KNN)
+
+### Database
+- SQLite
+
+### GUI
+- Tkinter
+
+### Visualization
+- Matplotlib
+
+### PDF Generation
+- ReportLab
 
 ---
 
-## 📂 Project Structure
+# 📂 Project Structure
 
+```
 FACREC/
 │
-├── face_data.py                # Collect face dataset
-├── face_recognition.py         # Real-time face recognition
-├── face_detection.py           # Face detection script
-├── face_dataset/               # Stored face data (.npy files)
-├── haarcascade_frontalface_alt.xml
-└── README.md
-
----
-
-## ⚙️ Installation
-
-### 1. Install Dependencies
-
-```bash
-pip install opencv-python numpy
-```
-
-Or
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 📸 Step 1: Collect Face Data
-
-Run:
-
-```bash
-python facial_data.py
-```
-
-Enter your name when prompted:
-
-```text
-Enter the name of person : MITHESH
-```
-
-The program will:
-
-- Open webcam
-- Detect face
-- Capture multiple face samples
-- Save dataset in `face_dataset/`
-
----
-
-## 🤖 Step 2: Run Face Recognition
-
-Run:
-
-```bash
-python face_recognition.py
-```
-
-The system will:
-
-- Load all saved face datasets
-- Train KNN model
-- Start webcam
-- Detect and recognize faces in real time
-
----
-
-## 🧠 How It Works
-
-### Face Detection
-
-The project uses OpenCV's Haar Cascade classifier:
-
-```python
-data.xml
-```
-
-to detect faces from webcam frames.
-
-### Face Dataset Creation
-
-Detected faces are:
-
-- Cropped
-- Resized
-- Flattened into feature vectors
-- Stored as `.npy` files
-
-### Face Recognition
-
-Recognition is performed using:
-
-### K-Nearest Neighbors (KNN)
-
-Steps:
-
-1. Calculate Euclidean distance
-2. Find nearest neighbors
-3. Majority voting
-4. Predict identity
-
----
-
-## 📊 Algorithm Used
-
-### Euclidean Distance
-
-\[
-Distance = \sqrt{\sum (x_i - y_i)^2}
-\]
-
-Used to measure similarity between facial feature vectors.
-
----
-
-## 📁 Dataset Format
-
-Example:
-
-```text
-face_dataset/
+├── services/
+│   ├── auth_service.py
+│   ├── student_service.py
+│   ├── attendance_service.py
+│   ├── dataset_service.py
+│   ├── recognition_service.py
+│   ├── report_service.py
+│   └── face_service.py
 │
-├── MITHESH.npy
-├── ASHOK.npy
-├── VIKRAM.npy
+├── face_dataset/
+├── reports/
+├── attendance/
+│
+├── login.py
+├── dashboard.py
+├── face_data.py
+├── face_recognition.py
+├── student_profile.py
+├── database.py
+├── attendance.db
+└── README.md
 ```
-
-Each file stores facial feature vectors for a specific person.
 
 ---
 
-## 🚀 Future Improvements
+# 🏗 Architecture
 
-- Deep Learning based Face Recognition
-- Face Mask Detection
-- Attendance Management System
-- GUI Application
-- Database Integration
-- Cloud Deployment
+```
+                Login
+                  │
+                  ▼
+             Dashboard
+                  │
+   ┌──────────────┼──────────────┐
+   ▼              ▼              ▼
+Students     Attendance     Face Recognition
+   │              │              │
+   ▼              ▼              ▼
+student_service attendance_service recognition_service
+                  │
+                  ▼
+             database.py
+                  │
+                  ▼
+               SQLite
+```
+
+---
+
+# 🚀 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/MITHESHMANAS/FACREC.git
+```
+
+Go to the project folder
+
+```bash
+cd FACREC
+```
+
+Install dependencies
+
+```bash
+pip install opencv-python numpy matplotlib reportlab
+```
+
+Run the application
+
+```bash
+python login.py
+```
+
+---
+
+# 📷 Workflow
+
+1. Login
+2. Register Student
+3. Capture Face Dataset
+4. Start Face Recognition
+5. Attendance Stored in SQLite
+6. View Analytics & Reports
+
+---
+
+# 📊 Reports
+
+- Attendance Report
+- Attendance Percentage
+- Attendance Shortage
+- Dashboard Statistics
+- Pie Chart
+- Bar Chart
+- PDF Report
+
+---
+
+# 💡 Future Enhancements
+
+- Deep Learning Face Recognition (FaceNet / ArcFace)
+- MySQL/PostgreSQL Support
+- Flask/Django Web Version
+- Email Notifications
+- QR Code Attendance
+- Cloud Database Integration
+- REST API
+- Mobile Application
 
 ---

@@ -1,3 +1,6 @@
-attendance.db
-attendance/*.csv
 __pycache__/
+*.pyc
+attendance.db
+face_dataset/
+reports/
+.vscode/
