@@ -2,6 +2,54 @@ from database import get_connection
 from datetime import datetime
 
 
+
+
+def mark_attendance(student_name, subject):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    now = datetime.now()
+
+    date = now.strftime("%d-%m-%Y")
+    time = now.strftime("%H:%M:%S")
+
+    cursor.execute("""
+        SELECT *
+        FROM attendance
+        WHERE student_name=?
+        AND subject=?
+        AND date=?
+    """, (
+        student_name,
+        subject,
+        date
+    ))
+
+    if cursor.fetchone() is None:
+
+        cursor.execute("""
+            INSERT INTO attendance
+            (
+                student_name,
+                subject,
+                date,
+                time,
+                status
+            )
+            VALUES (?,?,?,?,?)
+        """, (
+            student_name,
+            subject,
+            date,
+            time,
+            "Present"
+        ))
+
+        conn.commit()
+
+    conn.close()
+    
 def get_student_attendance(student_name):
     """Return attendance grouped by subject."""
     conn = get_connection()

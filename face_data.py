@@ -1,31 +1,28 @@
 import cv2
-import numpy as np
-import os
 
-# Load Haar Cascade
-face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
+from services.dataset_service import save_face_dataset
+
+face_cascade = cv2.CascadeClassifier(
+    "haarcascade_frontalface_alt.xml"
+)
 
 if face_cascade.empty():
-    print("Error: Could not load haarcascade_frontalface_alt.xml")
+    print("Error: Haar Cascade file not found.")
     exit()
 
-# Start Webcam
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
-    print("Error: Could not open webcam")
+    print("Error: Could not open webcam.")
     exit()
 
+person_name = input("Enter Student Name: ")
+
+face_samples = []
+
 skip = 0
-face_data = []
-
-dataset_path = "./face_dataset/"
-
-# Create folder if it doesn't exist
-if not os.path.exists(dataset_path):
-    os.makedirs(dataset_path)
-
-file_name = input("Enter the name of person: ")
+OFFSET = 10
+MAX_SAMPLES = 30
 
 while True:
 
@@ -34,93 +31,90 @@ while True:
     if not ret:
         continue
 
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(
+        frame,
+        cv2.COLOR_BGR2GRAY
+    )
 
     faces = face_cascade.detectMultiScale(
-        gray_frame,
+        gray,
         scaleFactor=1.3,
         minNeighbors=5
     )
 
-    if len(faces) == 0:
-        cv2.imshow("faces", frame)
+    if len(faces):
 
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
-            break
+        faces = sorted(
+            faces,
+            key=lambda f: f[2] * f[3],
+            reverse=True
+        )
 
-        continue
+        x, y, w, h = faces[0]
 
-    # Sort faces by area (largest face first)
-    faces = sorted(
-        faces,
-        key=lambda x: x[2] * x[3],
-        reverse=True
+        x1 = max(0, x - OFFSET)
+        y1 = max(0, y - OFFSET)
+        x2 = min(frame.shape[1], x + w + OFFSET)
+        y2 = min(frame.shape[0], y + h + OFFSET)
+
+        face = frame[y1:y2, x1:x2]
+
+        try:
+
+            face = cv2.resize(
+                face,
+                (100, 100)
+            )
+
+        except:
+
+            continue
+
+        skip += 1
+
+        if skip % 10 == 0:
+
+            face_samples.append(face)
+
+            print(
+                f"Collected {len(face_samples)} / {MAX_SAMPLES}"
+            )
+
+        cv2.imshow(
+            "Face",
+            face
+        )
+
+        cv2.rectangle(
+            frame,
+            (x, y),
+            (x + w, y + h),
+            (0, 255, 0),
+            2
+        )
+
+    cv2.imshow(
+        "Capture Dataset",
+        frame
     )
 
-    skip += 1
-
-    x, y, w, h = faces[0]
-
-    offset = 10
-
-    x1 = max(0, x - offset)
-    y1 = max(0, y - offset)
-    x2 = min(frame.shape[1], x + w + offset)
-    y2 = min(frame.shape[0], y + h + offset)
-
-    face_section = frame[y1:y2, x1:x2]
-
-    try:
-        face_section = cv2.resize(face_section, (100, 100))
-    except:
-        continue
-
-    # Save every 10th frame
-    if skip % 10 == 0:
-        face_data.append(face_section)
-        print(f"Samples Collected: {len(face_data)}")
-
-    cv2.rectangle(
-        frame,
-        (x, y),
-        (x + w, y + h),
-        (0, 255, 0),
-        2
-    )
-
-    cv2.imshow("Face", face_section)
-    cv2.imshow("faces", frame)
-
-    # Auto stop after 30 samples
-    if len(face_data) >= 30:
-        print("30 samples collected.")
+    if len(face_samples) >= MAX_SAMPLES:
         break
 
-    key = cv2.waitKey(1) & 0xFF
-
-    if key == ord('q'):
-        print("Exiting...")
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
-
-# Convert to numpy array
-face_data = np.array(face_data)
-
-if len(face_data) > 0:
-
-    face_data = face_data.reshape(
-        (face_data.shape[0], -1)
-    )
-
-    save_path = os.path.join(dataset_path, file_name + ".npy")
-
-    np.save(save_path, face_data)
-
-    print("Dataset saved at:")
-    print(save_path)
-
-else:
-    print("No face data collected.")
 
 cap.release()
-cv2.destroyAllWindows(x )
+
+cv2.destroyAllWindows()
+
+if save_face_dataset(
+    person_name,
+    face_samples
+):
+
+    print("Dataset saved successfully.")
+
+else:
+
+    print("No dataset saved.")
