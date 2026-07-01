@@ -96,3 +96,17 @@ def delete_student(name):
     if deleted == 0:
         return False, "Student Not Found"
     return True, "Student Deleted Successfully"
+
+def get_student_count():
+    """Return total number of students."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM students")
+
+    count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return count

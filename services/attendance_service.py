@@ -93,3 +93,50 @@ def get_low_attendance_students(threshold=75):
             })
 
     return result
+from datetime import datetime
+
+
+def get_today_attendance_count():
+    """Return today's attendance record count."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    today = datetime.now().strftime("%d-%m-%Y")
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM attendance
+        WHERE date=?
+    """, (today,))
+
+    count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return count
+
+
+def get_overall_attendance_percentage():
+    """Return overall attendance percentage."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            COUNT(*),
+            SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END)
+        FROM attendance
+    """)
+
+    total_classes, total_present = cursor.fetchone()
+
+    conn.close()
+
+    if total_classes == 0:
+        return 0.0
+
+    total_present = total_present or 0
+
+    return round((total_present / total_classes) * 100, 2)
