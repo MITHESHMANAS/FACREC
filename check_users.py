@@ -1,11 +1,6 @@
-import sqlite3
+from services.auth_service import get_all_users
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
+print("\n===== USERS =====\n")
 
-cursor.execute("SELECT * FROM users")
-
-for row in cursor.fetchall():
-    print(row)
-
-conn.close()
+for user in get_all_users():
+    print(user)

@@ -1,47 +1,22 @@
 import tkinter as tk
 from tkinter import messagebox
-import sqlite3
 import os
 
-root = tk.Tk()
-root.title("FACREC Login")
-root.geometry("350x250")
+from services.auth_service import authenticate
 
-tk.Label(root, text="Username").pack()
-username = tk.Entry(root)
-username.pack()
-
-tk.Label(root, text="Password").pack()
-password = tk.Entry(root, show="*")
-password.pack()
 
 def login():
 
-    conn = sqlite3.connect("attendance.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        SELECT role
-        FROM users
-        WHERE username=?
-        AND password=?
-        """,
-        (
-            username.get(),
-            password.get()
-        )
+    role = authenticate(
+        username.get(),
+        password.get()
     )
 
-    result = cursor.fetchone()
-
-    conn.close()
-
-    if result:
+    if role:
 
         messagebox.showinfo(
             "Success",
-            f"Logged in as {result[0]}"
+            f"Logged in as {role}"
         )
 
         root.destroy()
@@ -54,6 +29,31 @@ def login():
             "Error",
             "Invalid Credentials"
         )
+
+
+root = tk.Tk()
+
+root.title("FACREC Login")
+root.geometry("350x250")
+
+tk.Label(
+    root,
+    text="Username"
+).pack()
+
+username = tk.Entry(root)
+username.pack()
+
+tk.Label(
+    root,
+    text="Password"
+).pack()
+
+password = tk.Entry(
+    root,
+    show="*"
+)
+password.pack()
 
 tk.Button(
     root,

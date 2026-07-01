@@ -1,18 +1,5 @@
-import sqlite3
+from services.auth_service import create_users_table
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
+create_users_table()
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT,
-    role TEXT
-)
-""")
-
-conn.commit()
-conn.close()
-
-print("Users table created")
+print("Users table created successfully.")

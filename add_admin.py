@@ -1,20 +1,5 @@
-import sqlite3
+from services.auth_service import add_admin
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
+add_admin()
 
-cursor.execute("""
-INSERT OR IGNORE INTO users
-(username, password, role)
-VALUES
-('admin', 'admin123', 'Admin')
-""")
-
-conn.commit()
-
-cursor.execute("SELECT * FROM users")
-
-for row in cursor.fetchall():
-    print(row)
-
-conn.close()
+print("Default admin added successfully.")
