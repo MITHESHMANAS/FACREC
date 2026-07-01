@@ -35,3 +35,61 @@ def get_overall_attendance(student_name):
         return 0.0
 
     return round((total_present / total_classes) * 100, 2)
+def get_attendance_summary(student_name):
+    """Return attendance summary for each subject."""
+    attendance = get_student_attendance(student_name)
+
+    attendance_summary = []
+
+    for subject, total, present in attendance:
+
+        present = present or 0
+
+        percentage = round((present / total) * 100, 2)
+
+        attendance_summary.append({
+            "subject": subject,
+            "present": present,
+            "total": total,
+            "percentage": percentage,
+        })
+
+    return attendance_summary
+
+def get_low_attendance_students(threshold=75):
+    """Return students whose attendance is below the given threshold."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            student_name,
+            subject,
+            COUNT(*) AS total_classes,
+            SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS present_classes
+        FROM attendance
+        GROUP BY student_name, subject
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    result = []
+
+    for student, subject, total, present in rows:
+
+        present = present or 0
+
+        percentage = round((present / total) * 100, 2)
+
+        if percentage < threshold:
+            result.append({
+                "student": student,
+                "subject": subject,
+                "present": present,
+                "total": total,
+                "percentage": percentage,
+            })
+
+    return result

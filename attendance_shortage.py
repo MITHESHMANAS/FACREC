@@ -1,22 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
-import sqlite3
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
+from services.attendance_service import get_low_attendance_students
 
-cursor.execute("""
-SELECT
-    student_name,
-    subject,
-    COUNT(*) AS total_classes,
-    SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS present_classes
-FROM attendance
-GROUP BY student_name, subject
-""")
 
-rows = cursor.fetchall()
-conn.close()
+rows = get_low_attendance_students()
 
 root = tk.Tk()
 root.title("Attendance Shortage Report")
@@ -39,25 +27,17 @@ for col in columns:
 
 tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-for student, subject, total, present in rows:
-
-    if present is None:
-        present = 0
-
-    percentage = round((present / total) * 100, 2)
-
-    if percentage < 75:
-
-        tree.insert(
-            "",
-            tk.END,
-            values=(
-                student,
-                subject,
-                present,
-                total,
-                f"{percentage}%"
-            )
+for row in rows:
+    tree.insert(
+        "",
+        tk.END,
+        values=(
+            row["student"],
+            row["subject"],
+            row["present"],
+            row["total"],
+            f"{row['percentage']}%",
         )
+    )
 
 root.mainloop()
