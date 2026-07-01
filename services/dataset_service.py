@@ -9,8 +9,37 @@ def ensure_dataset_directory():
     os.makedirs(DATASET_PATH, exist_ok=True)
 
 
+def dataset_exists(name):
+    """Check if a student's dataset exists."""
+    return os.path.exists(
+        os.path.join(DATASET_PATH, f"{name}.npy")
+    )
+
+
+def list_registered_students():
+    """Return all registered students having face datasets."""
+    ensure_dataset_directory()
+
+    return sorted([
+        file[:-4]
+        for file in os.listdir(DATASET_PATH)
+        if file.endswith(".npy")
+    ])
+
+
+def delete_face_dataset(name):
+    """Delete a student's face dataset."""
+    path = os.path.join(DATASET_PATH, f"{name}.npy")
+
+    if os.path.exists(path):
+        os.remove(path)
+        return True
+
+    return False
+
+
 def save_face_dataset(name, face_samples):
-    """Save captured face samples as a .npy file."""
+    """Save captured face samples."""
 
     ensure_dataset_directory()
 
@@ -19,7 +48,9 @@ def save_face_dataset(name, face_samples):
     if len(face_samples) == 0:
         return False
 
-    face_samples = face_samples.reshape((face_samples.shape[0], -1))
+    face_samples = face_samples.reshape(
+        (face_samples.shape[0], -1)
+    )
 
     np.save(
         os.path.join(DATASET_PATH, f"{name}.npy"),
@@ -30,7 +61,7 @@ def save_face_dataset(name, face_samples):
 
 
 def load_face_dataset():
-    """Load every face dataset and build a training set."""
+    """Load all datasets."""
 
     ensure_dataset_directory()
 

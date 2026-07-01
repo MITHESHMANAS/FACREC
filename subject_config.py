@@ -1,3 +1,5 @@
+CURRENT_SUBJECT = "AI"
+
 SUBJECTS = [
     "AI",
     "ML",

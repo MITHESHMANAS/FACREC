@@ -1,36 +1,23 @@
-import sqlite3
 import matplotlib.pyplot as plt
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
+from services.report_service import get_attendance_by_subject
 
-cursor.execute("""
-SELECT subject,
-COUNT(*)
-FROM attendance
-GROUP BY subject
-""")
 
-data = cursor.fetchall()
+data = get_attendance_by_subject()
 
-if len(data) == 0:
-    print("No attendance records found")
+if not data:
+    print("No attendance records found.")
     exit()
 
 subjects = [row[0] for row in data]
 counts = [row[1] for row in data]
 
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(8, 5))
 
-plt.bar(
-    subjects,
-    counts
-)
+plt.bar(subjects, counts)
 
 plt.title("Attendance By Subject")
 plt.xlabel("Subject")
 plt.ylabel("Attendance Count")
 
 plt.show()
-
-conn.close()
