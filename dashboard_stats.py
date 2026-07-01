@@ -5,13 +5,6 @@ from services.attendance_service import (
     get_low_attendance_students,
 )
 
-from services.student_service import get_student_count
-from services.attendance_service import (
-    get_today_attendance_count,
-    get_overall_attendance_percentage,
-    get_low_attendance_students,
-)
-
 
 def get_stats():
 

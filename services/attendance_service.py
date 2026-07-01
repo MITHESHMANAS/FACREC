@@ -1,4 +1,5 @@
 from database import get_connection
+from datetime import datetime
 
 
 def get_student_attendance(student_name):
@@ -154,3 +155,38 @@ def get_total_attendance_records():
     conn.close()
 
     return count
+
+def get_fixed_class_attendance(student_name, total_classes=30):
+    """Return attendance percentage for predefined subjects."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    subjects = ["AI", "ML", "DBMS", "CN", "OS"]
+
+    result = []
+
+    for subject in subjects:
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM attendance
+            WHERE student_name = ?
+            AND subject = ?
+            AND status = 'Present'
+        """, (student_name, subject))
+
+        present = cursor.fetchone()[0]
+
+        percentage = round((present / total_classes) * 100, 2)
+
+        result.append({
+            "subject": subject,
+            "present": present,
+            "total": total_classes,
+            "percentage": percentage,
+        })
+
+    conn.close()
+
+    return result
