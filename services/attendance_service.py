@@ -140,3 +140,17 @@ def get_overall_attendance_percentage():
     total_present = total_present or 0
 
     return round((total_present / total_classes) * 100, 2)
+
+def get_total_attendance_records():
+    """Return total attendance records."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM attendance")
+
+    count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return count
