@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sqlite3
-
-DB_NAME = "attendance.db"
+from services.attendance_service import get_attendance_percentage_report
 
 
 def search_student():
@@ -12,23 +10,11 @@ def search_student():
         messagebox.showerror("Error", "Enter Student Name")
         return
 
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
+    report = get_attendance_percentage_report(student)
 
-    cursor.execute("""
-        SELECT
-            subject,
-            COUNT(*) as total,
-            SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) as present
-        FROM attendance
-        WHERE student_name=?
-        GROUP BY subject
-    """, (student,))
+    rows = report["subjects"]
 
-    rows = cursor.fetchall()
-
-    conn.close()
-
+    # Clear previous results
     for item in tree.get_children():
         tree.delete(item)
 
@@ -38,47 +24,30 @@ def search_student():
         shortage_label.config(text="")
         return
 
-    total_present = 0
-    total_classes = 0
-
-    shortage_subjects = []
-
-    for subject, total, present in rows:
-
-        if present is None:
-            present = 0
-
-        percentage = round((present / total) * 100, 2)
+    # Insert attendance data
+    for row in rows:
 
         tree.insert(
             "",
             "end",
             values=(
-                subject,
-                present,
-                total,
-                f"{percentage}%"
+                row["subject"],
+                row["present"],
+                row["total"],
+                f"{row['percentage']}%"
             )
         )
 
-        total_present += present
-        total_classes += total
-
-        if percentage < 75:
-            shortage_subjects.append(
-                f"{subject} ({percentage}%)"
-            )
-
-    overall = round((total_present / total_classes) * 100, 2)
-
+    # Overall attendance
     overall_label.config(
-        text=f"Overall Attendance : {overall}%"
+        text=f"Overall Attendance : {report['overall']}%"
     )
 
-    if shortage_subjects:
+    # Attendance shortage
+    if report["shortage"]:
 
         shortage_label.config(
-            text="⚠ Shortage : " + ", ".join(shortage_subjects),
+            text="⚠ Shortage : " + ", ".join(report["shortage"]),
             fg="red"
         )
 
@@ -88,8 +57,6 @@ def search_student():
             text="✅ Attendance is above 75%",
             fg="green"
         )
-
-
 root = tk.Tk()
 
 root.title("Attendance Percentage Report")

@@ -1,18 +1,9 @@
-import sqlite3
+from services.attendance_service import get_all_attendance_records
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
 
-cursor.execute("""
-SELECT *
-FROM attendance
-""")
-
-rows = cursor.fetchall()
+rows = get_all_attendance_records()
 
 print("\n===== ATTENDANCE RECORDS =====\n")
 
 for row in rows:
     print(row)
-
-conn.close()

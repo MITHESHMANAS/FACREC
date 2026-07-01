@@ -190,3 +190,66 @@ def get_fixed_class_attendance(student_name, total_classes=30):
     conn.close()
 
     return result
+
+def get_attendance_percentage_report(student_name):
+    """Return attendance report with percentages for a student."""
+
+    attendance = get_student_attendance(student_name)
+
+    report = []
+
+    total_present = 0
+    total_classes = 0
+    shortage_subjects = []
+
+    for subject, total, present in attendance:
+
+        present = present or 0
+
+        percentage = round((present / total) * 100, 2)
+
+        report.append({
+            "subject": subject,
+            "present": present,
+            "total": total,
+            "percentage": percentage,
+        })
+
+        total_present += present
+        total_classes += total
+
+        if percentage < 75:
+            shortage_subjects.append(
+                f"{subject} ({percentage}%)"
+            )
+
+    overall = 0.0
+
+    if total_classes:
+        overall = round(
+            (total_present / total_classes) * 100,
+            2
+        )
+
+    return {
+        "subjects": report,
+        "overall": overall,
+        "shortage": shortage_subjects,
+    }
+    
+def get_all_attendance_records():
+    """Return all attendance records."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM attendance
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return rows
