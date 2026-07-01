@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-import sqlite3
 
-DB = "attendance.db"
+from services.student_service import get_student
+from database import get_connection
+
 
 def search_student():
     name = entry.get().strip()
@@ -10,22 +11,22 @@ def search_student():
     if not name:
         messagebox.showerror("Error", "Enter Student Name")
         return
-
-    conn = sqlite3.connect(DB)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    SELECT name, roll_no, branch, semester, email
-    FROM students
-    WHERE name=?
-    """, (name,))
-
-    student = cursor.fetchone()
-
+    
+    student = get_student(name)
+    
     if not student:
+        
+       # Clear previous student information
+        info.config(text="")     
+        # Clear attendance summary
+        summary.delete("1.0", tk.END)     
         messagebox.showerror("Error", "Student Not Found")
-        conn.close()
         return
+
+    
+
+    conn = get_connection()
+    cursor = conn.cursor()
 
     cursor.execute("""
     SELECT
@@ -43,11 +44,11 @@ def search_student():
 
     info.config(
         text=f"""
-Name      : {student[0]}
-Roll No   : {student[1]}
-Branch    : {student[2]}
-Semester  : {student[3]}
-Email     : {student[4]}
+Name      : {student['name']}
+Roll No   : {student['roll_no']}
+Branch    : {student['branch']}
+Semester  : {student['semester']}
+Email     : {student['email']}
 """
     )
 
@@ -63,7 +64,7 @@ Email     : {student[4]}
         if present is None:
             present = 0
 
-        percentage = round((present/total)*100,2)
+        percentage = round((present/total)*100, 2)
 
         total_present += present
         total_classes += total

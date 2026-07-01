@@ -1,11 +1,4 @@
-import sqlite3
+from services.student_service import get_all_students
 
-conn = sqlite3.connect("attendance.db")
-cursor = conn.cursor()
-
-cursor.execute("SELECT * FROM students")
-
-for row in cursor.fetchall():
-    print(row)
-
-conn.close()
+for student in get_all_students():
+    print(student)
