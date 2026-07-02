@@ -1,10 +1,17 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const studentSchema = new mongoose.Schema(
     {
         name: {
             type: String,
             required: true,
+            trim: true
+        },
+
+        rollNo: {
+            type: String,
+            required: true,
+            unique: true,
             trim: true
         },
 
@@ -16,15 +23,19 @@ const userSchema = new mongoose.Schema(
             trim: true
         },
 
-        password: {
+        branch: {
             type: String,
             required: true
         },
 
-        role: {
+        semester: {
+            type: Number,
+            required: true
+        },
+
+        faceDatasetId: {
             type: String,
-            enum: ["admin", "faculty", "student"],
-            default: "student"
+            default: null
         },
 
         isActive: {
@@ -37,4 +48,4 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Student", studentSchema);
