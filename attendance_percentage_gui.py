@@ -1,16 +1,29 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+
 from services.attendance_service import get_attendance_percentage_report
 
 
 def search_student():
+
     student = entry.get().strip()
 
-    if student == "":
-        messagebox.showerror("Error", "Enter Student Name")
+    if not student:
+        messagebox.showwarning(
+            "Missing Information",
+            "Please enter a student name."
+        )
         return
 
-    report = get_attendance_percentage_report(student)
+    try:
+        report = get_attendance_percentage_report(student)
+
+    except Exception as e:
+        messagebox.showerror(
+            "Error",
+            f"Unable to fetch attendance report.\n\n{e}"
+        )
+        return
 
     rows = report["subjects"]
 
@@ -18,18 +31,23 @@ def search_student():
     for item in tree.get_children():
         tree.delete(item)
 
-    if len(rows) == 0:
-        messagebox.showinfo("Not Found", "No Attendance Found")
+    if not rows:
+
         overall_label.config(text="")
         shortage_label.config(text="")
+
+        messagebox.showinfo(
+            "Not Found",
+            "No attendance records found."
+        )
+
         return
 
-    # Insert attendance data
     for row in rows:
 
         tree.insert(
             "",
-            "end",
+            tk.END,
             values=(
                 row["subject"],
                 row["present"],
@@ -38,12 +56,10 @@ def search_student():
             )
         )
 
-    # Overall attendance
     overall_label.config(
         text=f"Overall Attendance : {report['overall']}%"
     )
 
-    # Attendance shortage
     if report["shortage"]:
 
         shortage_label.config(
@@ -57,21 +73,21 @@ def search_student():
             text="✅ Attendance is above 75%",
             fg="green"
         )
+
+
 root = tk.Tk()
 
 root.title("Attendance Percentage Report")
 root.geometry("700x500")
+root.resizable(False, False)
 
-title = tk.Label(
+tk.Label(
     root,
     text="Attendance Percentage Report",
     font=("Arial", 18, "bold")
-)
-
-title.pack(pady=15)
+).pack(pady=15)
 
 frame = tk.Frame(root)
-
 frame.pack()
 
 tk.Label(
@@ -87,6 +103,8 @@ entry = tk.Entry(
 )
 
 entry.grid(row=0, column=1)
+
+entry.bind("<Return>", lambda event: search_student())
 
 tk.Button(
     frame,

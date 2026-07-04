@@ -1,5 +1,7 @@
 import cv2
 
+from subject_config import get_current_subject
+
 from services.dataset_service import load_face_dataset
 from services.recognition_service import predict
 from services.face_service import (
@@ -12,84 +14,87 @@ from services.face_service import (
 from services.attendance_service import mark_attendance
 
 
-CURRENT_SUBJECT = "AI"
-
-
 def main():
 
     trainset, names = load_face_dataset()
 
     if trainset is None:
-
         print("No face dataset found.")
         return
 
     detector = load_face_detector()
-
     cap = start_camera()
 
-    while True:
+    try:
 
-        ret, frame = cap.read()
+        while True:
 
-        if not ret:
-            continue
+            ret, frame = cap.read()
 
-        faces = detect_faces(
-            detector,
-            frame
-        )
-
-        for face in faces:
-
-            try:
-
-                face_img = extract_face(
-                    frame,
-                    face
-                )
-
-            except:
-
+            if not ret:
                 continue
 
-            label, distance, confidence, unknown = predict(
-                trainset,
-                face_img
+            faces = detect_faces(
+                detector,
+                frame
             )
 
-            if unknown:
+            for face in faces:
 
-                student = "UNKNOWN"
+                try:
 
-            else:
+                    face_img = extract_face(
+                        frame,
+                        face
+                    )
 
-                student = names[label]
+                except cv2.error:
+                    continue
 
-                mark_attendance(
-                    student,
-                    CURRENT_SUBJECT
+                label, distance, confidence, unknown = predict(
+                    trainset,
+                    face_img
                 )
 
-            draw_prediction(
-                frame,
-                face,
-                student,
-                confidence,
-                distance
+                if unknown:
+
+                    student = "UNKNOWN"
+
+                else:
+
+                    student = names[label]
+
+                    # Get currently selected subject
+                    subject = get_current_subject()
+
+                    # Mark attendance
+                    mark_attendance(
+                        student,
+                        subject
+                    )
+
+                draw_prediction(
+                    frame,
+                    face,
+                    student,
+                    confidence,
+                    distance
+                )
+
+            cv2.imshow(
+                "FACREC Attendance System",
+                frame
             )
 
-        cv2.imshow(
-            "FACREC Attendance System",
-            frame
-        )
+            key = cv2.waitKey(1) & 0xFF
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+            if key == ord("q"):
+                break
 
-    cap.release()
+    finally:
 
-    cv2.destroyAllWindows()
+        cap.release()
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

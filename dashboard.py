@@ -1,19 +1,30 @@
-import tkinter as tk
 import os
+import tkinter as tk
+from tkinter import messagebox
 
 from dashboard_stats import get_stats
-from subject_config import CURRENT_SUBJECT
+from subject_config import get_current_subject
 
 
 def open_module(filename):
-    os.system(f"python {filename}")
+    """Launch a FACREC module."""
+
+    if not os.path.exists(filename):
+        messagebox.showerror(
+            "Module Not Found",
+            f"Unable to locate:\n{filename}"
+        )
+        return
+
+    os.system(f'python "{filename}"')
 
 
 students, attendance, overall, shortage = get_stats()
 
 root = tk.Tk()
 root.title("FACREC Dashboard")
-root.geometry("600x650")
+root.geometry("600x700")
+root.resizable(False, False)
 
 tk.Label(
     root,
@@ -35,9 +46,9 @@ tk.Label(
 
 tk.Label(
     root,
-    text=f"Current Subject : {CURRENT_SUBJECT}",
+    text=f"Current Subject : {get_current_subject()}",
     font=("Arial", 12)
-).pack(pady=(0, 20))
+).pack(pady=(0, 15))
 
 tk.Label(
     root,
@@ -65,15 +76,15 @@ buttons = [
     ("Attendance Bar Chart", "attendance_bar_chart.py"),
 ]
 
-for text, file in buttons:
+for text, filename in buttons:
 
     tk.Button(
         root,
         text=text,
         width=30,
         height=2,
-        command=lambda f=file: open_module(f)
-    ).pack(pady=5)
+        command=lambda f=filename: open_module(f)
+    ).pack(pady=4)
 
 tk.Button(
     root,

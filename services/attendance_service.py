@@ -3,8 +3,8 @@ from datetime import datetime
 
 
 
-
 def mark_attendance(student_name, subject):
+    """Mark attendance using student_id and student_name."""
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -14,14 +14,31 @@ def mark_attendance(student_name, subject):
     date = now.strftime("%d-%m-%Y")
     time = now.strftime("%H:%M:%S")
 
+    # Get student id
     cursor.execute("""
-        SELECT *
+        SELECT id
+        FROM students
+        WHERE name = ?
+    """, (student_name,))
+
+    student = cursor.fetchone()
+
+    if student is None:
+        print(f"Student '{student_name}' not found.")
+        conn.close()
+        return
+
+    student_id = student[0]
+
+    # Check duplicate attendance
+    cursor.execute("""
+        SELECT attendance_id
         FROM attendance
-        WHERE student_name=?
-        AND subject=?
-        AND date=?
+        WHERE student_id = ?
+        AND subject = ?
+        AND date = ?
     """, (
-        student_name,
+        student_id,
         subject,
         date
     ))
@@ -31,14 +48,16 @@ def mark_attendance(student_name, subject):
         cursor.execute("""
             INSERT INTO attendance
             (
+                student_id,
                 student_name,
                 subject,
                 date,
                 time,
                 status
             )
-            VALUES (?,?,?,?,?)
+            VALUES (?,?,?,?,?,?)
         """, (
+            student_id,
             student_name,
             subject,
             date,
@@ -50,6 +69,7 @@ def mark_attendance(student_name, subject):
 
     conn.close()
     
+     
 def get_student_attendance(student_name):
     """Return attendance grouped by subject."""
     conn = get_connection()

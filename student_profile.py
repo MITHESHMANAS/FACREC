@@ -9,22 +9,36 @@ from services.attendance_service import (
 
 
 def search_student():
+
     name = entry.get().strip()
 
     if not name:
-        messagebox.showerror("Error", "Enter Student Name")
+        messagebox.showwarning(
+            "Missing Information",
+            "Please enter a student name."
+        )
         return
 
-    student = get_student(name)
+    try:
+        student = get_student(name)
+
+    except Exception as e:
+        messagebox.showerror(
+            "Error",
+            f"Unable to fetch student details.\n\n{e}"
+        )
+        return
 
     if not student:
-        # Clear previous student information
-        info.config(text="")
 
-        # Clear attendance summary
+        info.config(text="")
         summary.delete("1.0", tk.END)
 
-        messagebox.showerror("Error", "Student Not Found")
+        messagebox.showinfo(
+            "Not Found",
+            "Student not found."
+        )
+
         return
 
     attendance = get_student_attendance(name)
@@ -40,14 +54,29 @@ Email     : {student['email']}
     )
 
     summary.delete("1.0", tk.END)
-    summary.insert(tk.END, "Subject\tPercentage\n\n")
+
+    summary.insert(
+        tk.END,
+        "Subject\tPercentage\n\n"
+    )
+
+    if not attendance:
+
+        summary.insert(
+            tk.END,
+            "No attendance records available."
+        )
+
+        return
 
     for subject, total, present in attendance:
 
-        if present is None:
-            present = 0
+        present = present or 0
 
-        percentage = round((present / total) * 100, 2)
+        percentage = round(
+            (present / total) * 100,
+            2
+        )
 
         summary.insert(
             tk.END,
@@ -60,21 +89,29 @@ Email     : {student['email']}
         tk.END,
         f"\nOverall Attendance : {overall}%"
     )
-    
+
+
 root = tk.Tk()
 
 root.title("Student Profile")
-
 root.geometry("500x550")
+root.resizable(False, False)
 
 tk.Label(
     root,
     text="Student Profile",
-    font=("Arial",18,"bold")
+    font=("Arial", 18, "bold")
 ).pack(pady=10)
 
-entry = tk.Entry(root,font=("Arial",12),width=25)
+entry = tk.Entry(
+    root,
+    font=("Arial", 12),
+    width=25
+)
+
 entry.pack()
+
+entry.bind("<Return>", lambda event: search_student())
 
 tk.Button(
     root,
@@ -85,7 +122,7 @@ tk.Button(
 info = tk.Label(
     root,
     justify="left",
-    font=("Arial",12)
+    font=("Arial", 12)
 )
 
 info.pack()
@@ -94,7 +131,7 @@ summary = tk.Text(
     root,
     width=45,
     height=15,
-    font=("Arial",11)
+    font=("Arial", 11)
 )
 
 summary.pack()

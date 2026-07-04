@@ -2,27 +2,38 @@ import cv2
 
 from services.dataset_service import save_face_dataset
 
+
+OFFSET = 10
+MAX_SAMPLES = 30
+FACE_SIZE = (100, 100)
+
+
 face_cascade = cv2.CascadeClassifier(
     "haarcascade_frontalface_alt.xml"
 )
 
 if face_cascade.empty():
     print("Error: Haar Cascade file not found.")
-    exit()
+    raise SystemExit
 
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
     print("Error: Could not open webcam.")
-    exit()
+    raise SystemExit
 
-person_name = input("Enter Student Name: ")
+
+person_name = input("Enter Student Name: ").strip()
+
+if not person_name:
+    print("Student name cannot be empty.")
+    cap.release()
+    cv2.destroyAllWindows()
+    raise SystemExit
+
 
 face_samples = []
-
 skip = 0
-OFFSET = 10
-MAX_SAMPLES = 30
 
 while True:
 
@@ -63,11 +74,10 @@ while True:
 
             face = cv2.resize(
                 face,
-                (100, 100)
+                FACE_SIZE
             )
 
-        except:
-
+        except cv2.error:
             continue
 
         skip += 1
@@ -77,7 +87,7 @@ while True:
             face_samples.append(face)
 
             print(
-                f"Collected {len(face_samples)} / {MAX_SAMPLES}"
+                f"Collected {len(face_samples)}/{MAX_SAMPLES}"
             )
 
         cv2.imshow(
@@ -101,11 +111,12 @@ while True:
     if len(face_samples) >= MAX_SAMPLES:
         break
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
+    key = cv2.waitKey(1) & 0xFF
+
+    if key == ord("q"):
         break
 
 cap.release()
-
 cv2.destroyAllWindows()
 
 if save_face_dataset(
@@ -113,8 +124,8 @@ if save_face_dataset(
     face_samples
 ):
 
-    print("Dataset saved successfully.")
+    print("\nDataset saved successfully.")
 
 else:
 
-    print("No dataset saved.")
+    print("\nNo dataset saved.")
