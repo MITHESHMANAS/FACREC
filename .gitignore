@@ -4,3 +4,16 @@ attendance.db
 face_dataset/
 reports/
 .vscode/
+node_modules/
+.env
+dist/
+build/
+coverage/
+
+client/node_modules/
+server/node_modules/
+
+client/dist/
+server/dist/
+
+*.log
