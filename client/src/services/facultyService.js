@@ -1,17 +1,21 @@
 import api from "./api";
 
 export const getFaculty = async () => {
-
-    const response = await api.get("/faculty");
-
-    return response.data;
-
+    const { data } = await api.get("/faculty");
+    return data;
 };
 
 export const createFaculty = async (faculty) => {
+    const { data } = await api.post("/faculty", faculty);
+    return data;
+};
 
-    const response = await api.post("/faculty", faculty);
+export const updateFaculty = async (id, faculty) => {
+    const { data } = await api.put(`/faculty/${id}`, faculty);
+    return data;
+};
 
-    return response.data;
-
+export const deleteFaculty = async (id) => {
+    const { data } = await api.delete(`/faculty/${id}`);
+    return data;
 };

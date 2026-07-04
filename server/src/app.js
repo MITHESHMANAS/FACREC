@@ -7,7 +7,7 @@ const subjectRoutes=require("./routes/subjectRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const attendanceRoutes=require("./routes/attendanceRoutes");
 const facultyRoutes=require("./routes/facultyRoutes");
-
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
@@ -30,6 +30,6 @@ app.use("/api/subjects",subjectRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance",attendanceRoutes);
 app.use("/api/faculty",facultyRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
 module.exports = app;
 

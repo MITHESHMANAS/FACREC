@@ -31,10 +31,10 @@ export const AuthProvider = ({ children }) => {
         loadUser();
     }, []);
 
-    const loginUser = (token, user) => {
-        localStorage.setItem("token", token);
-        setUser(user);
-    };
+const loginUser = (token, user) => {
+    localStorage.setItem("token", token);
+    setUser(user);
+};
 
     const logoutUser = () => {
         localStorage.removeItem("token");
