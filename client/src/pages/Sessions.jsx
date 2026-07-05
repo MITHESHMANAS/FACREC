@@ -20,6 +20,7 @@ import {
     startSession,
     completeSession
 } from "../services/sessionService";
+
 const Sessions = () => {
 
     const [sessions, setSessions] = useState([]);
@@ -44,7 +45,7 @@ const Sessions = () => {
 
         }
 
-        catch {
+        catch (err) {
 
             toast.error("Failed to load sessions");
 
@@ -63,25 +64,53 @@ const Sessions = () => {
         loadSessions();
 
     }, []);
-const handleStart = async (session) => {
 
-    await startSession(session._id);
+    const handleStart = async (session) => {
 
-    toast.success("Session Started");
+        try {
 
-    loadSessions();
+            await startSession(session._id);
 
-};
+            toast.success("Session Started");
 
-const handleComplete = async (session) => {
+            loadSessions();
 
-    await completeSession(session._id);
+        }
 
-    toast.success("Session Ended");
+        catch (err) {
 
-    loadSessions();
+            toast.error(
+                err.response?.data?.message ||
+                "Unable to start session"
+            );
 
-};
+        }
+
+    };
+
+    const handleComplete = async (session) => {
+
+        try {
+
+            await completeSession(session._id);
+
+            toast.success("Session Ended");
+
+            loadSessions();
+
+        }
+
+        catch (err) {
+
+            toast.error(
+                err.response?.data?.message ||
+                "Unable to end session"
+            );
+
+        }
+
+    };
+
     const handleSaveSession = async (session) => {
 
         try {
@@ -90,7 +119,10 @@ const handleComplete = async (session) => {
 
             if (editingSession) {
 
-                await updateSession(editingSession._id, session);
+                await updateSession(
+                    editingSession._id,
+                    session
+                );
 
                 toast.success("Session Updated");
 
@@ -114,16 +146,19 @@ const handleComplete = async (session) => {
 
         catch (err) {
 
-    console.log(err);
-    console.log(err.response?.data);
+            console.log(err);
 
-    toast.error(
-        err.response?.data?.message ||
-        err.message ||
-        "Operation Failed"
-    );
+            toast.error(
 
-}
+                err.response?.data?.message ||
+
+                err.message ||
+
+                "Operation Failed"
+
+            );
+
+        }
 
         finally {
 
@@ -151,6 +186,8 @@ const handleComplete = async (session) => {
 
         try {
 
+            setSaving(true);
+
             await deleteSession(deleteSessionData._id);
 
             toast.success("Session Deleted");
@@ -161,9 +198,21 @@ const handleComplete = async (session) => {
 
         }
 
-        catch {
+        catch (err) {
 
-            toast.error("Delete Failed");
+            toast.error(
+
+                err.response?.data?.message ||
+
+                "Delete Failed"
+
+            );
+
+        }
+
+        finally {
+
+            setSaving(false);
 
         }
 
@@ -175,15 +224,15 @@ const handleComplete = async (session) => {
 
         return (
 
-            session.subject?.name.toLowerCase().includes(text)
+            session.subject?.name?.toLowerCase().includes(text)
 
             ||
 
-            session.faculty.toLowerCase().includes(text)
+            session.faculty?.toLowerCase().includes(text)
 
             ||
 
-            session.branch.toLowerCase().includes(text)
+            session.branch?.toLowerCase().includes(text)
 
         );
 
@@ -212,7 +261,6 @@ const handleComplete = async (session) => {
                         <RoleGuard roles={["admin"]}>
 
                             <button
-
                                 onClick={() => {
 
                                     setEditingSession(null);
@@ -220,9 +268,7 @@ const handleComplete = async (session) => {
                                     setOpen(true);
 
                                 }}
-
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
-
                             >
 
                                 + Create Session
@@ -243,19 +289,31 @@ const handleComplete = async (session) => {
 
                         <StatsCard
                             title="Active"
-                            value={sessions.filter(s => s.status === "ACTIVE").length}
+                            value={
+                                sessions.filter(
+                                    s => s.status === "ACTIVE"
+                                ).length
+                            }
                             color="text-green-600"
                         />
 
                         <StatsCard
-                            title="Completed"
-                            value={sessions.filter(s => s.status === "COMPLETED").length}
+                            title="Ended"
+                            value={
+                                sessions.filter(
+                                    s => s.status === "ENDED"
+                                ).length
+                            }
                             color="text-orange-600"
                         />
 
                         <StatsCard
                             title="Scheduled"
-                            value={sessions.filter(s => s.status === "SCHEDULED").length}
+                            value={
+                                sessions.filter(
+                                    s => s.status === "SCHEDULED"
+                                ).length
+                            }
                             color="text-red-600"
                         />
 
@@ -272,18 +330,16 @@ const handleComplete = async (session) => {
 
                     {
 
-                        loading
-
-                            ?
+                        loading ?
 
                             <div className="flex justify-center py-16">
 
-                                <BeatLoader color="#4f46e5"/>
+                                <BeatLoader color="#4f46e5" />
 
                             </div>
 
                             :
-                            
+
                             <SessionTable
                                 sessions={filteredSessions}
                                 onEdit={handleEdit}
@@ -300,7 +356,11 @@ const handleComplete = async (session) => {
 
             <Modal
                 isOpen={open}
-                title={editingSession ? "Edit Session" : "Create Session"}
+                title={
+                    editingSession
+                        ? "Edit Session"
+                        : "Create Session"
+                }
                 onClose={() => {
 
                     setEditingSession(null);
@@ -326,9 +386,9 @@ const handleComplete = async (session) => {
                         ? `Delete ${deleteSessionData.subject?.name} session?`
                         : ""
                 }
+                loading={saving}
                 onClose={() => setDeleteSessionData(null)}
                 onConfirm={confirmDelete}
-                loading={saving}
             />
 
         </div>

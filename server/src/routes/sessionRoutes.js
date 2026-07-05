@@ -21,6 +21,20 @@ router.get(
     controller.getSessions
 );
 
+router.put(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.updateSession
+);
+
+router.delete(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.deleteSession
+);
+
 router.patch(
     "/:id/start",
     protect,

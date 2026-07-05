@@ -88,10 +88,58 @@ const completeSession = async (req, res) => {
     }
 
 };
+const updateSession = async (req, res) => {
+
+    try {
+
+        const session = await sessionService.updateSession(
+            req.params.id,
+            req.body
+        );
+
+        res.json({
+            success: true,
+            session
+        });
+
+    } catch (err) {
+
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
+
+const deleteSession = async (req, res) => {
+
+    try {
+
+        await sessionService.deleteSession(req.params.id);
+
+        res.json({
+            success: true,
+            message: "Session Deleted Successfully"
+        });
+
+    } catch (err) {
+
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
 
 module.exports = {
     createSession,
     getSessions,
+    updateSession,
+    deleteSession,
     startSession,
     completeSession
 };

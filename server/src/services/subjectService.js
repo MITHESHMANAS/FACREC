@@ -1,20 +1,39 @@
-const Subject=require("../models/Subject");
+const Subject = require("../models/Subject");
 
-const createSubject=async(data)=>{
+const createSubject = async (data) => {
 
-    const subject=await Subject.create(data);
+    return await Subject.create(data);
 
-    return subject;
+};
 
-}
-
-const getSubjects=async()=>{
+const getSubjects = async () => {
 
     return await Subject.find();
 
-}
+};
 
-module.exports={
+const updateSubject = async (id, data) => {
+
+    return await Subject.findByIdAndUpdate(
+        id,
+        data,
+        {
+            new: true,
+            runValidators: true
+        }
+    );
+
+};
+
+const deleteSubject = async (id) => {
+
+    return await Subject.findByIdAndDelete(id);
+
+};
+
+module.exports = {
     createSubject,
-    getSubjects
-}
+    getSubjects,
+    updateSubject,
+    deleteSubject
+};

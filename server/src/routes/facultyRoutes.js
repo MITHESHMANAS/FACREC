@@ -1,13 +1,38 @@
-const express=require("express");
+const express = require("express");
 
-const router=express.Router();
+const router = express.Router();
 
-const protect=require("../middleware/authMiddleware");
+const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
-const controller=require("../controllers/facultyController");
+const controller = require("../controllers/facultyController");
 
-router.post("/",protect,controller.createFaculty);
+router.post(
+    "/",
+    protect,
+    authorize("admin"),
+    controller.createFaculty
+);
 
-router.get("/",protect,controller.getFaculty);
+router.get(
+    "/",
+    protect,
+    authorize("admin", "faculty"),
+    controller.getFaculty
+);
 
-module.exports=router;
+router.put(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.updateFaculty
+);
+
+router.delete(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.deleteFaculty
+);
+
+module.exports = router;

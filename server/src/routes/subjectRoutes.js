@@ -21,4 +21,18 @@ router.get(
     controller.getSubjects
 );
 
+router.put(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.updateSubject
+);
+
+router.delete(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.deleteSubject
+);
+
 module.exports = router;

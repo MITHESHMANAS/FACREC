@@ -1,17 +1,16 @@
 import api from "./api";
 
 export const getAttendance = async () => {
-
-    const response = await api.get("/attendance");
-
-    return response.data;
-
+    const { data } = await api.get("/attendance");
+    return data;
 };
 
 export const markAttendance = async (attendance) => {
+    const { data } = await api.post("/attendance", attendance);
+    return data;
+};
 
-    const response = await api.post("/attendance", attendance);
-
-    return response.data;
-
+export const deleteAttendance = async (id) => {
+    const { data } = await api.delete(`/attendance/${id}`);
+    return data;
 };

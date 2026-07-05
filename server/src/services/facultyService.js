@@ -1,18 +1,39 @@
-const Faculty=require("../models/Faculty");
+const Faculty = require("../models/Faculty");
 
-const createFaculty=async(data)=>{
+const createFaculty = async (data) => {
 
     return await Faculty.create(data);
 
-}
+};
 
-const getFaculty=async()=>{
+const getFaculty = async () => {
 
     return await Faculty.find();
 
-}
+};
 
-module.exports={
+const updateFaculty = async (id, data) => {
+
+    return await Faculty.findByIdAndUpdate(
+        id,
+        data,
+        {
+            new: true,
+            runValidators: true
+        }
+    );
+
+};
+
+const deleteFaculty = async (id) => {
+
+    return await Faculty.findByIdAndDelete(id);
+
+};
+
+module.exports = {
     createFaculty,
-    getFaculty
+    getFaculty,
+    updateFaculty,
+    deleteFaculty
 };

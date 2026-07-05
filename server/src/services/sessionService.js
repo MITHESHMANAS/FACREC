@@ -2,13 +2,36 @@ const AttendanceSession = require("../models/AttendanceSession");
 
 const createSession = async (data) => {
 
-    return await AttendanceSession.create(data);
+    const session = await AttendanceSession.create(data);
+
+    return await AttendanceSession.findById(session._id)
+        .populate("subject");
 
 };
 
 const getSessions = async () => {
 
-    return await AttendanceSession.find().populate("subject");
+    return await AttendanceSession.find()
+        .populate("subject");
+
+};
+
+const updateSession = async (id, data) => {
+
+    return await AttendanceSession.findByIdAndUpdate(
+        id,
+        data,
+        {
+            new: true,
+            runValidators: true
+        }
+    ).populate("subject");
+
+};
+
+const deleteSession = async (id) => {
+
+    return await AttendanceSession.findByIdAndDelete(id);
 
 };
 
@@ -47,6 +70,8 @@ const completeSession = async (id) => {
 module.exports = {
     createSession,
     getSessions,
+    updateSession,
+    deleteSession,
     startSession,
     completeSession
 };
