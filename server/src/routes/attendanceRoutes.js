@@ -21,4 +21,11 @@ router.get(
     controller.getAttendance
 );
 
+router.delete(
+    "/:id",
+    protect,
+    authorize("admin"),
+    controller.deleteAttendance
+);
+
 module.exports = router;

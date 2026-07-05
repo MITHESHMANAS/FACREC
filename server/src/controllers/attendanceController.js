@@ -1,42 +1,80 @@
-const attendanceService=require("../services/attendanceService");
+const attendanceService = require("../services/attendanceService");
 
-const markAttendance=async(req,res)=>{
+const markAttendance = async (req, res) => {
 
-    try{
+    try {
 
-        const attendance=await attendanceService.markAttendance(req.body);
+        const attendance = await attendanceService.markAttendance(req.body);
 
         res.status(201).json({
-            success:true,
+            success: true,
             attendance
         });
 
     }
 
-    catch(err){
+    catch (err) {
 
         res.status(400).json({
-            success:false,
-            message:err.message
+            success: false,
+            message: err.message
         });
 
     }
 
 };
 
-const getAttendance=async(req,res)=>{
+const getAttendance = async (req, res) => {
 
-    const attendance=await attendanceService.getAttendance();
+    try {
 
-    res.json({
-        success:true,
-        count:attendance.length,
-        attendance
-    });
+        const attendance = await attendanceService.getAttendance();
+
+        res.json({
+            success: true,
+            count: attendance.length,
+            attendance
+        });
+
+    }
+
+    catch (err) {
+
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
 
 };
 
-module.exports={
+const deleteAttendance = async (req, res) => {
+
+    try {
+
+        await attendanceService.deleteAttendance(req.params.id);
+
+        res.json({
+            success: true,
+            message: "Attendance Deleted Successfully"
+        });
+
+    }
+
+    catch (err) {
+
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
+
+module.exports = {
     markAttendance,
-    getAttendance
+    getAttendance,
+    deleteAttendance
 };
