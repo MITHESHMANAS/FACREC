@@ -19,11 +19,15 @@ def main():
     trainset, names = load_face_dataset()
 
     if trainset is None:
-        print("No face dataset found.")
-        return
+        return {
+            "success": False,
+            "message": "No face dataset found."
+        }
 
     detector = load_face_detector()
     cap = start_camera()
+
+    recognized_students = []
 
     try:
 
@@ -64,14 +68,31 @@ def main():
 
                     student = names[label]
 
-                    # Get currently selected subject
+                    # Current subject
                     subject = get_current_subject()
 
                     # Mark attendance
-                    mark_attendance(
-                        student,
-                        subject
-                    )
+                    ##mark_attendance(
+                        ##student,
+                      ##  subject
+                    ##)
+
+                    # Avoid duplicate entries in same session
+                    already_exists = False
+
+                    for s in recognized_students:
+                        if s["name"] == student:
+                            already_exists = True
+                            break
+
+                    if not already_exists:
+
+                        recognized_students.append({
+                            "name": student,
+                            "subject": subject,
+                            "confidence": round(confidence, 2),
+                            "status": "Present"
+                        })
 
                 draw_prediction(
                     frame,
@@ -96,7 +117,17 @@ def main():
         cap.release()
         cv2.destroyAllWindows()
 
+    return {
+        "success": True,
+        "recognized": recognized_students,
+        "total": len(recognized_students)
+    }
+
 
 if __name__ == "__main__":
 
-    main()
+    import json
+
+    result = main()
+
+    print(json.dumps(result))

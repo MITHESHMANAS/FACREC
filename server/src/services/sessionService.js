@@ -37,21 +37,48 @@ const deleteSession = async (id) => {
 
 const startSession = async (id) => {
 
-    return await AttendanceSession.findByIdAndUpdate(
-        id,
+    // End any currently active sessions
+    await AttendanceSession.updateMany(
         {
             status: "ACTIVE"
         },
         {
-            new: true
+            status: "ENDED",
+            endTime: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            })
+        }
+    );
+
+    // Start selected session
+    const session = await AttendanceSession.findByIdAndUpdate(
+        id,
+        {
+            status: "ACTIVE",
+            startTime: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            }),
+            endTime: null
+        },
+        {
+            new: true,
+            runValidators: true
         }
     ).populate("subject");
+
+    if (!session) {
+        throw new Error("Session not found");
+    }
+
+    return session;
 
 };
 
 const completeSession = async (id) => {
 
-    return await AttendanceSession.findByIdAndUpdate(
+    const session = await AttendanceSession.findByIdAndUpdate(
         id,
         {
             status: "ENDED",
@@ -61,9 +88,16 @@ const completeSession = async (id) => {
             })
         },
         {
-            new: true
+            new: true,
+            runValidators: true
         }
     ).populate("subject");
+
+    if (!session) {
+        throw new Error("Session not found");
+    }
+
+    return session;
 
 };
 

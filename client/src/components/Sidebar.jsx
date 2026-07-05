@@ -7,6 +7,7 @@ import {
     FaCalendarAlt,
     FaClipboardCheck,
     FaChartBar,
+    FaFilePdf,
     FaSignOutAlt
 } from "react-icons/fa";
 
@@ -23,7 +24,11 @@ const Sidebar = () => {
         { name: "Subjects", icon: <FaBook />, path: "/subjects" },
         { name: "Sessions", icon: <FaCalendarAlt />, path: "/sessions" },
         { name: "Attendance", icon: <FaClipboardCheck />, path: "/attendance" },
-        { name: "Analytics", icon: <FaChartBar />, path: "/analytics" }
+        { name: "Analytics", icon: <FaChartBar />, path: "/analytics" },
+
+        // NEW
+        { name: "Reports", icon: <FaFilePdf />, path: "/reports" }
+
     ];
 
     return (

@@ -18,11 +18,21 @@ import {
     deleteAttendance
 } from "../services/attendanceService";
 
+import {
+    startRecognition
+} from "../services/recognitionService";
+
+import { getSessions } from "../services/sessionService";
+
 const Attendance = () => {
 
     const [attendance, setAttendance] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
+    const [recognizing, setRecognizing] = useState(false);
+    const [recognizedStudents, setRecognizedStudents] = useState([]);
+    const [activeSession, setActiveSession] = useState(null);
 
     const [search, setSearch] = useState("");
 
@@ -54,9 +64,35 @@ const Attendance = () => {
 
     };
 
+    const loadActiveSession = async () => {
+
+        try {
+
+            const data = await getSessions();
+
+            const active = data.sessions.find(
+
+                session => session.status === "ACTIVE"
+
+            );
+
+            setActiveSession(active || null);
+
+        }
+
+        catch (err) {
+
+            console.log(err);
+
+        }
+
+    };
+
     useEffect(() => {
 
         loadAttendance();
+
+        loadActiveSession();
 
     }, []);
 
@@ -91,6 +127,69 @@ const Attendance = () => {
         finally {
 
             setSaving(false);
+
+        }
+
+    };
+
+    const handleRecognition = async () => {
+
+        if (!activeSession) {
+
+            toast.error(
+
+                "Please start a session first."
+
+            );
+
+            return;
+
+        }
+
+        try {
+
+            setRecognizing(true);
+
+            toast.loading(
+                "Starting Face Recognition...",
+                {
+                    id: "recognition"
+                }
+            );
+
+            const result = await startRecognition();
+
+            toast.dismiss("recognition");
+
+            toast.success(
+                `${result.total} student(s) recognized`
+            );
+
+            setRecognizedStudents(
+                result.recognized || []
+            );
+
+            await loadAttendance();
+
+        }
+
+        catch (err) {
+
+            toast.dismiss("recognition");
+
+            toast.error(
+
+                err.response?.data?.message ||
+
+                "Recognition Failed"
+
+            );
+
+        }
+
+        finally {
+
+            setRecognizing(false);
 
         }
 
@@ -178,19 +277,56 @@ const Attendance = () => {
 
                         </h1>
 
-                        <RoleGuard roles={["admin","faculty"]}>
+                        <RoleGuard roles={["admin", "faculty"]}>
 
-                            <button
+                            <div className="flex gap-3">
 
-                                onClick={() => setOpen(true)}
+                                <button
 
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+                                    onClick={handleRecognition}
 
-                            >
+                                    disabled={recognizing || !activeSession}
 
-                                + Mark Attendance
+                                    className={`text-white px-5 py-2 rounded-lg
+                                    ${
+                                        activeSession
+                                            ?
+                                            "bg-green-600 hover:bg-green-700"
+                                            :
+                                            "bg-gray-400 cursor-not-allowed"
+                                    }`}
 
-                            </button>
+                                >
+
+                                    {
+
+                                        activeSession
+
+                                            ?
+
+                                            "🎥 Start Face Recognition"
+
+                                            :
+
+                                            "No Active Session"
+
+                                    }
+
+                                </button>
+
+                                <button
+
+                                    onClick={() => setOpen(true)}
+
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+
+                                tactics>
+
+                                    Manual Attendance
+
+                                </button>
+
+                            </div>
 
                         </RoleGuard>
 
@@ -226,7 +362,6 @@ const Attendance = () => {
 
                         <StatsCard
                             title="Students"
-
                             value={
                                 new Set(
                                     attendance.map(
@@ -234,17 +369,175 @@ const Attendance = () => {
                                     )
                                 ).size
                             }
-
                             color="text-orange-600"
                         />
 
                     </div>
 
+                    {
+
+                        activeSession ? (
+
+                            <div className="bg-green-50 border border-green-300 rounded-xl shadow-sm p-6 mb-6">
+
+                                <div className="flex justify-between items-center">
+
+                                    <div>
+
+                                        <h2 className="text-2xl font-bold text-green-700">
+
+                                            🟢 Active Session
+
+                                        </h2>
+
+                                        <p className="mt-3">
+
+                                            <strong>Subject:</strong>{" "}
+
+                                            {activeSession.subject?.name}
+
+                                        </p>
+
+                                        <p>
+
+                                            <strong>Faculty:</strong>{" "}
+
+                                            {activeSession.faculty}
+
+                                        </p>
+
+                                        <p>
+
+                                            <strong>Semester:</strong>{" "}
+
+                                            {activeSession.semester}
+
+                                        </p>
+
+                                        <p>
+
+                                            <strong>Branch:</strong>{" "}
+
+                                            {activeSession.branch}
+
+                                        </p>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span className="bg-green-600 text-white px-4 py-2 rounded-full">
+
+                                            ACTIVE
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        ) : (
+
+                            <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-6 mb-6">
+
+                                <h2 className="text-xl font-bold text-yellow-700">
+
+                                    ⚠ No Active Session
+
+                                </h2>
+
+                                <p className="mt-2">
+
+                                    Start a session before beginning face recognition.
+
+                                </p>
+
+                            </div>
+
+                        )
+
+                    }
+
+                    {
+
+                        recognizedStudents.length > 0 && (
+
+                            <div className="bg-white rounded-xl shadow p-5 mb-6">
+
+                                <h2 className="text-xl font-semibold mb-4">
+
+                                    Recognition Results
+
+                                </h2>
+
+                                {
+
+                                    recognizedStudents.map((student) => (
+
+                                        <div
+
+                                            key={student.name}
+
+                                            className="flex justify-between border-b py-3"
+
+                                        >
+
+                                            <div>
+
+                                                <p className="font-medium">
+
+                                                    ✅ {student.name}
+
+                                                </p>
+
+                                                <p className="text-sm text-gray-500">
+
+                                                    {student.subject}
+
+                                                </p>
+
+                                            </div>
+
+                                            <div className="text-right">
+
+                                                <p className="text-green-600 font-semibold">
+
+                                                    {student.status}
+
+                                                </p>
+
+                                                <p className="text-xs text-gray-500">
+
+                                                    {student.confidence}%
+
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    ))
+
+                                }
+
+                            </div>
+
+                        )
+
+                    }
+
                     <div className="mb-6">
 
                         <SearchBar
+
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+
+                            onChange={(e) =>
+                                setSearch(e.target.value)
+                            }
+
                         />
 
                     </div>
@@ -281,7 +574,7 @@ const Attendance = () => {
 
                 isOpen={open}
 
-                title="Mark Attendance"
+                title="Manual Attendance"
 
                 onClose={() => setOpen(false)}
 

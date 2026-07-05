@@ -8,7 +8,9 @@ const sessionRoutes = require("./routes/sessionRoutes");
 const attendanceRoutes=require("./routes/attendanceRoutes");
 const facultyRoutes=require("./routes/facultyRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
-
+const recognitionRoutes = require("./routes/recognitionRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const app = express();
 
 app.use(cors());
@@ -31,5 +33,14 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance",attendanceRoutes);
 app.use("/api/faculty",facultyRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/recognition", recognitionRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use(
+
+    "/api/reports",
+
+    reportRoutes
+
+);
 module.exports = app;
 

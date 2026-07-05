@@ -1,7 +1,19 @@
 import os
 import numpy as np
 
-DATASET_PATH = "face_dataset"
+# FACREC project root
+BASE_DIR = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        ".."
+    )
+)
+
+# Absolute path to face_dataset
+DATASET_PATH = os.path.join(
+    BASE_DIR,
+    "face_dataset"
+)
 
 
 def ensure_dataset_directory():
@@ -64,6 +76,9 @@ def load_face_dataset():
     """Load all datasets."""
 
     ensure_dataset_directory()
+
+    # Temporary debug (remove after testing)
+
 
     face_data = []
     labels = []

@@ -1,22 +1,36 @@
+import os
 import cv2
 
+# FACREC project root
+BASE_DIR = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        ".."
+    )
+)
 
-CASCADE_PATH = "haarcascade_frontalface_alt.xml"
+# Absolute path to Haar Cascade
+CASCADE_PATH = os.path.join(
+    BASE_DIR,
+    "haarcascade_frontalface_alt.xml"
+)
 
 
 def load_face_detector():
+    """Load Haar Cascade detector."""
+
+
     detector = cv2.CascadeClassifier(CASCADE_PATH)
 
     if detector.empty():
         raise FileNotFoundError(
-            "haarcascade_frontalface_alt.xml not found"
+            f"Haar Cascade not found at:\n{CASCADE_PATH}"
         )
 
     return detector
 
 
 def start_camera(camera_index=0):
-
     cap = cv2.VideoCapture(camera_index)
 
     if not cap.isOpened():

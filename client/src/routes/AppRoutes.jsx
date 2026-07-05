@@ -8,12 +8,16 @@ import Subjects from "../pages/Subjects";
 import Sessions from "../pages/Sessions";
 import Attendance from "../pages/Attendance";
 import Analytics from "../pages/Analytics";
+import Reports from "../pages/Reports";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
 const AppRoutes = () => {
+
     return (
+
         <BrowserRouter>
+
             <Routes>
 
                 <Route
@@ -84,9 +88,21 @@ const AppRoutes = () => {
                     }
                 />
 
+                <Route
+                    path="/reports"
+                    element={
+                        <ProtectedRoute>
+                            <Reports />
+                        </ProtectedRoute>
+                    }
+                />
+
             </Routes>
+
         </BrowserRouter>
+
     );
+
 };
 
 export default AppRoutes;
