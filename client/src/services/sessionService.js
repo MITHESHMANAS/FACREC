@@ -1,17 +1,31 @@
 import api from "./api";
 
 export const getSessions = async () => {
-
-    const response = await api.get("/sessions");
-
-    return response.data;
-
+    const { data } = await api.get("/sessions");
+    return data;
 };
 
 export const createSession = async (session) => {
+    const { data } = await api.post("/sessions", session);
+    return data;
+};
 
-    const response = await api.post("/sessions", session);
+export const updateSession = async (id, session) => {
+    const { data } = await api.put(`/sessions/${id}`, session);
+    return data;
+};
 
-    return response.data;
+export const deleteSession = async (id) => {
+    const { data } = await api.delete(`/sessions/${id}`);
+    return data;
+};
 
+export const startSession = async (id) => {
+    const { data } = await api.patch(`/sessions/${id}/start`);
+    return data;
+};
+
+export const completeSession = async (id) => {
+    const { data } = await api.patch(`/sessions/${id}/complete`);
+    return data;
 };

@@ -38,11 +38,11 @@ const attendanceSessionSchema = new mongoose.Schema(
         default: null
     },
 
-    status: {
-        type: String,
-        enum: ["ACTIVE", "ENDED"],
-        default: "ACTIVE"
-    }
+status: {
+    type: String,
+    enum: ["SCHEDULED", "ACTIVE", "ENDED"],
+    default: "SCHEDULED"
+}
 
 },
 {

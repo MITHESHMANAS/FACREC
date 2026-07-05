@@ -1,13 +1,17 @@
 import ActionButtons from "./ActionButtons";
 import RoleGuard from "./RoleGuard";
-import StatusBadge from "./StatusBadge";
 
-const SessionTable = ({ sessions, onEdit, onDelete }) => {
+const SessionTable = ({
+    sessions,
+    onEdit,
+    onDelete,
+    onStart,
+    onComplete
+}) => {
 
     if (sessions.length === 0) {
 
         return (
-
             <div className="bg-white rounded-xl shadow p-10 text-center text-gray-500">
 
                 📅
@@ -21,11 +25,47 @@ const SessionTable = ({ sessions, onEdit, onDelete }) => {
                 </p>
 
             </div>
-
         );
 
     }
 
+const getStatusBadge = (status) => {
+
+    switch (status) {
+
+        case "SCHEDULED":
+
+            return (
+                <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-semibold">
+                    SCHEDULED
+                </span>
+            );
+
+        case "ACTIVE":
+
+            return (
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+                    ACTIVE
+                </span>
+            );
+
+        case "ENDED":
+
+            return (
+                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
+                    ENDED
+                </span>
+            );
+
+        default:
+
+            return (
+                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                    UNKNOWN
+                </span>
+            );
+    }
+};
     return (
 
         <div className="overflow-x-auto rounded-xl shadow bg-white">
@@ -46,7 +86,11 @@ const SessionTable = ({ sessions, onEdit, onDelete }) => {
                         <th className="text-center">Status</th>
 
                         <RoleGuard roles={["admin"]}>
-                            <th className="text-center">Actions</th>
+
+                            <th className="text-center">
+                                Actions
+                            </th>
+
                         </RoleGuard>
 
                     </tr>
@@ -63,63 +107,73 @@ const SessionTable = ({ sessions, onEdit, onDelete }) => {
                         >
 
                             <td className="p-4">
-
                                 {session.subject?.name}
-
                             </td>
 
                             <td>
-
                                 {session.faculty}
-
                             </td>
 
                             <td>
-
                                 {session.semester}
-
                             </td>
 
                             <td>
-
                                 {session.branch}
-
                             </td>
 
                             <td>
-
                                 {session.date}
-
                             </td>
 
                             <td>
-
                                 {session.startTime}
-
                             </td>
 
                             <td>
-
                                 {session.endTime || "--"}
-
                             </td>
 
                             <td className="text-center">
-
-                                <StatusBadge
-                                    active={session.status === "ACTIVE"}
-                                />
-
+                                {getStatusBadge(session.status)}
                             </td>
 
                             <RoleGuard roles={["admin"]}>
 
-                                <td className="text-center">
+                                <td>
 
-                                    <ActionButtons
-                                        onEdit={() => onEdit(session)}
-                                        onDelete={() => onDelete(session)}
-                                    />
+                                    <div className="flex justify-center gap-2">
+
+                                        {session.status === "ENDED" ? null : (
+
+                                            session.status === "ACTIVE" ? (
+
+                                                <button
+                                                    onClick={() => onComplete(session)}
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                                                >
+                                                    End
+                                                </button>
+
+                                            ) : (
+
+                                                <button
+                                                    onClick={() => onStart(session)}
+                                                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                                                >
+                                                    Start
+                                                </button>
+
+                                            )
+
+                                        )}
+
+                                        <ActionButtons
+                                            onEdit={() => onEdit(session)}
+                                            onDelete={() => onDelete(session)}
+                                        />
+
+                                    </div>
 
                                 </td>
 

@@ -16,9 +16,10 @@ import {
     getSessions,
     createSession,
     updateSession,
-    deleteSession
+    deleteSession,
+    startSession,
+    completeSession
 } from "../services/sessionService";
-
 const Sessions = () => {
 
     const [sessions, setSessions] = useState([]);
@@ -62,7 +63,25 @@ const Sessions = () => {
         loadSessions();
 
     }, []);
+const handleStart = async (session) => {
 
+    await startSession(session._id);
+
+    toast.success("Session Started");
+
+    loadSessions();
+
+};
+
+const handleComplete = async (session) => {
+
+    await completeSession(session._id);
+
+    toast.success("Session Ended");
+
+    loadSessions();
+
+};
     const handleSaveSession = async (session) => {
 
         try {
@@ -95,15 +114,16 @@ const Sessions = () => {
 
         catch (err) {
 
-            toast.error(
+    console.log(err);
+    console.log(err.response?.data);
 
-                err.response?.data?.message ||
+    toast.error(
+        err.response?.data?.message ||
+        err.message ||
+        "Operation Failed"
+    );
 
-                "Operation Failed"
-
-            );
-
-        }
+}
 
         finally {
 
@@ -263,11 +283,13 @@ const Sessions = () => {
                             </div>
 
                             :
-
+                            
                             <SessionTable
                                 sessions={filteredSessions}
                                 onEdit={handleEdit}
                                 onDelete={handleDelete}
+                                onStart={handleStart}
+                                onComplete={handleComplete}
                             />
 
                     }

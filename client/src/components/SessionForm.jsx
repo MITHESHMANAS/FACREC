@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { getSubjects } from "../services/masterDataService";
 
 const SessionForm = ({
     onSubmit,
@@ -7,11 +8,31 @@ const SessionForm = ({
     initialData = null
 }) => {
 
+    const [subjects, setSubjects] = useState([]);
+
     const {
         register,
         handleSubmit,
-        reset
+        reset,
+        watch,
+        setValue
     } = useForm();
+
+    const selectedSubjectId = watch("subject");
+
+    useEffect(() => {
+
+        const loadSubjects = async () => {
+
+            const data = await getSubjects();
+
+            setSubjects(data);
+
+        };
+
+        loadSubjects();
+
+    }, []);
 
     useEffect(() => {
 
@@ -19,22 +40,44 @@ const SessionForm = ({
 
             reset(initialData);
 
-        } else {
+        }
+
+        else {
 
             reset({
+
                 subject: "",
                 faculty: "",
                 semester: 5,
                 branch: "CSE",
-                date: "",
+                date: new Date().toISOString().split("T")[0],
                 startTime: "",
                 endTime: "",
-                status: "ACTIVE"
+                status: "SCHEDULED"
+
             });
 
         }
 
     }, [initialData, reset]);
+
+    useEffect(() => {
+
+        const subject = subjects.find(
+
+            s => s._id === selectedSubjectId
+
+        );
+
+        if (!subject) return;
+
+        setValue("faculty", subject.faculty);
+
+        setValue("semester", subject.semester);
+
+        setValue("branch", subject.branch);
+
+    }, [selectedSubjectId, subjects, setValue]);
 
     return (
 
@@ -45,12 +88,37 @@ const SessionForm = ({
 
             <div>
 
-                <label>Subject</label>
+                <label className="font-medium">
+                    Subject
+                </label>
 
-                <input
+                <select
                     {...register("subject")}
                     className="w-full border rounded-lg p-3"
-                />
+                >
+
+                    <option value="">
+                        Select Subject
+                    </option>
+
+                    {
+
+                        subjects.map(subject => (
+
+                            <option
+                                key={subject._id}
+                                value={subject._id}
+                            >
+
+                                {subject.code} - {subject.name}
+
+                            </option>
+
+                        ))
+
+                    }
+
+                </select>
 
             </div>
 
@@ -59,8 +127,9 @@ const SessionForm = ({
                 <label>Faculty</label>
 
                 <input
+                    readOnly
                     {...register("faculty")}
-                    className="w-full border rounded-lg p-3"
+                    className="w-full border rounded-lg p-3 bg-gray-100"
                 />
 
             </div>
@@ -69,18 +138,11 @@ const SessionForm = ({
 
                 <label>Semester</label>
 
-                <select
+                <input
+                    readOnly
                     {...register("semester")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    {[1,2,3,4,5,6,7,8].map((sem)=>(
-                        <option key={sem} value={sem}>
-                            {sem}
-                        </option>
-                    ))}
-
-                </select>
+                    className="w-full border rounded-lg p-3 bg-gray-100"
+                />
 
             </div>
 
@@ -88,17 +150,11 @@ const SessionForm = ({
 
                 <label>Branch</label>
 
-                <select
+                <input
+                    readOnly
                     {...register("branch")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    <option>CSE</option>
-                    <option>ECE</option>
-                    <option>ME</option>
-                    <option>CE</option>
-
-                </select>
+                    className="w-full border rounded-lg p-3 bg-gray-100"
+                />
 
             </div>
 
@@ -138,22 +194,10 @@ const SessionForm = ({
 
             </div>
 
-            <div>
-
-                <label>Status</label>
-
-                <select
-                    {...register("status")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    <option>ACTIVE</option>
-                    <option>SCHEDULED</option>
-                    <option>COMPLETED</option>
-
-                </select>
-
-            </div>
+            <input
+                type="hidden"
+                {...register("status")}
+            />
 
             <button
                 disabled={loading}
@@ -161,9 +205,17 @@ const SessionForm = ({
             >
 
                 {
+
                     loading
-                        ? (initialData ? "Updating..." : "Creating...")
-                        : (initialData ? "Update Session" : "Create Session")
+
+                        ? "Saving..."
+
+                        : initialData
+
+                            ? "Update Session"
+
+                            : "Create Session"
+
                 }
 
             </button>
