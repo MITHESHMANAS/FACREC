@@ -11,6 +11,7 @@ import Analytics from "../pages/Analytics";
 import Reports from "../pages/Reports";
 
 import ProtectedRoute from "../components/ProtectedRoute";
+import StudentProfile from "../pages/StudentProfile";
 
 const AppRoutes = () => {
 
@@ -87,7 +88,14 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
-
+                 <Route
+    path="/students/:id"
+    element={
+        <ProtectedRoute>
+            <StudentProfile />
+        </ProtectedRoute>
+    }
+/>
                 <Route
                     path="/reports"
                     element={

@@ -12,7 +12,7 @@ const recognitionRoutes = require("./routes/recognitionRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const app = express();
-
+const studentProfileRoutes =require("./routes/studentProfileRoutes");
 app.use(cors());
 app.use(express.json());
 
@@ -41,6 +41,10 @@ app.use(
 
     reportRoutes
 
+);
+app.use(
+    "/api/student-profile",
+    studentProfileRoutes
 );
 module.exports = app;
 

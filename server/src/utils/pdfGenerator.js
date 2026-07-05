@@ -14,177 +14,289 @@ const DANGER = "#dc2626";
 const DARK = "#1e293b";
 const LIGHT = "#64748b";
 const BORDER = "#cbd5e1";
+const CARD_BG = "#f1f5f9";
+const ACCENT = "#0891b2";
+
+const PAGE_X = 45;
+const PAGE_WIDTH = 510;
 
 // ==========================================================
-// Header / Title
+// Report ID
+// ==========================================================
+
+function generateReportId() {
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
+    const rand = Math.floor(100 + Math.random() * 900);
+    return `FACREC-${datePart}-${rand}`;
+}
+
+// ==========================================================
+// Header / Title / Metadata
 // ==========================================================
 
 function drawTitle(doc) {
     doc
         .fillColor(PRIMARY)
         .font("Helvetica-Bold")
-        .fontSize(24)
+        .fontSize(22)
         .text("FACREC ENTERPRISE", { align: "center" });
 
     doc
         .moveDown(0.2)
         .fillColor(DARK)
         .font("Helvetica")
-        .fontSize(12)
+        .fontSize(11)
         .text("Face Recognition Attendance Management System", { align: "center" });
 
-    doc.moveDown(0.5);
+    doc.moveDown(0.4);
 
     doc
         .strokeColor(PRIMARY)
         .lineWidth(2)
-        .moveTo(50, doc.y)
-        .lineTo(545, doc.y)
+        .moveTo(PAGE_X, doc.y)
+        .lineTo(PAGE_X + PAGE_WIDTH, doc.y)
         .stroke();
 
-    doc.moveDown(1);
+    doc.moveDown(0.8);
+}
+
+function drawReportMeta(doc, reportId) {
+    const y = doc.y;
+    const metaX = 340;
+    const metaWidth = 215;
+
+    doc.fillColor(LIGHT).font("Helvetica-Bold").fontSize(8.5)
+        .text("REPORT ID", metaX, y, { width: metaWidth, align: "right" });
+
+    doc.fillColor(DARK).font("Helvetica-Bold").fontSize(10)
+        .text(reportId, metaX, y + 11, { width: metaWidth, align: "right" });
+
+    doc.fillColor(LIGHT).font("Helvetica-Bold").fontSize(8.5)
+        .text("GENERATED", metaX, y + 27, { width: metaWidth, align: "right" });
+
+    doc.fillColor(DARK).font("Helvetica").fontSize(9.5)
+        .text(new Date().toLocaleString(), metaX, y + 39, { width: metaWidth, align: "right" });
+
+    doc.y = y + 58;
 }
 
 function sectionTitle(doc, title) {
     doc
         .fillColor(PRIMARY)
         .font("Helvetica-Bold")
-        .fontSize(16)
+        .fontSize(14)
         .text(title);
 
-    doc.moveDown(0.5);
-}
-
-function labelValue(doc, label, value) {
-    doc
-        .fillColor(DARK)
-        .font("Helvetica-Bold")
-        .fontSize(11)
-        .text(`${label}: `, { continued: true });
-
-    doc.font("Helvetica").text(value);
-}
-
-function drawSessionInfo(doc, session) {
-    sectionTitle(doc, "Session Information");
-
-    labelValue(doc, "Subject", session.subject?.name || "-");
-    labelValue(doc, "Faculty", session.faculty || "-");
-    labelValue(doc, "Semester", String(session.semester ?? "-"));
-    labelValue(doc, "Branch", session.branch || "-");
-    labelValue(doc, "Date", session.date || "-");
-    labelValue(doc, "Generated", new Date().toLocaleString());
-
-    doc.moveDown();
+    doc.moveDown(0.4);
 }
 
 // ==========================================================
-// Attendance Table
+// Session Card
 // ==========================================================
 
-function drawTableHeader(doc, y) {
-    doc.fillColor(PRIMARY).rect(45, y, 510, 25).fill();
+function drawSessionCard(doc, session) {
+    sectionTitle(doc, "Session Details");
 
-    doc.fillColor("white").font("Helvetica-Bold").fontSize(10);
+    const rows = [
+        ["Subject", session.subject?.name || "-"],
+        ["Faculty", session.faculty || "-"],
+        ["Branch", session.branch || "-"],
+        ["Semester", String(session.semester ?? "-")],
+        ["Date", session.date || "-"]
+    ];
 
-    doc.text("Roll", 55, y + 8, { width: 45 });
-    doc.text("Student", 105, y + 8, { width: 110 });
-    doc.text("Email", 215, y + 8, { width: 170 });
-    doc.text("Status", 395, y + 8, { width: 70 });
-    doc.text("Time", 470, y + 8, { width: 70 });
-}
+    const rowHeight = 21;
+    const paddingTop = 14;
+    const height = rows.length * rowHeight + paddingTop;
+    const y = doc.y;
 
-function drawAttendanceRows(doc, attendance) {
-    let y = doc.y + 5;
+    doc.roundedRect(PAGE_X, y, PAGE_WIDTH, height, 8).fillColor(CARD_BG).fill();
+    doc.roundedRect(PAGE_X, y, PAGE_WIDTH, height, 8).lineWidth(1).strokeColor(BORDER).stroke();
 
-    drawTableHeader(doc, y);
-    y += 30;
+    let rowY = y + paddingTop - 2;
 
-    attendance.forEach((record, index) => {
-        // Page break check — leave room for a row before the footer zone
-        if (y > 720) {
-            doc.addPage();
-            drawTitle(doc);
-            drawTableHeader(doc, 90);
-            y = 120;
-        }
+    rows.forEach(([label, value]) => {
+        doc.fillColor(DARK).font("Helvetica-Bold").fontSize(10)
+            .text(label, PAGE_X + 25, rowY, { width: 110 });
 
-        if (index % 2 === 0) {
-            doc.fillColor("#f8fafc").rect(45, y - 5, 510, 25).fill();
-        }
+        doc.fillColor(DARK).font("Helvetica").fontSize(10)
+            .text(value, PAGE_X + 150, rowY, { width: PAGE_WIDTH - 175 });
 
-        doc.fillColor(DARK).font("Helvetica").fontSize(10);
-
-        doc.text(record.student?.rollNo || "-", 55, y, { width: 45 });
-        doc.text(record.student?.name || "-", 105, y, { width: 100 });
-        doc.text(record.student?.email || "-", 215, y, { width: 170 });
-
-        doc.fillColor(record.status === "Present" ? SUCCESS : DANGER);
-        doc.font("Helvetica-Bold");
-        doc.text(record.status, 395, y, { width: 70 });
-
-        doc.fillColor(DARK).font("Helvetica");
-        doc.text(
-            record.markedAt ? new Date(record.markedAt).toLocaleTimeString() : "--",
-            470,
-            y,
-            { width: 70 }
-        );
-
-        doc.strokeColor(BORDER);
-        doc.moveTo(45, y + 20).lineTo(555, y + 20).stroke();
-
-        y += 25;
+        rowY += rowHeight;
     });
 
-    doc.y = y;
-    doc.moveDown(2);
+    doc.y = y + height + 18;
 }
 
 // ==========================================================
-// Summary
+// Attendance Table (bordered grid, centered text, status pills)
 // ==========================================================
 
-function drawSummary(doc, attendance) {
+function drawAttendanceTable(doc, attendance) {
+    const cols = [
+        { label: "Roll", width: 50 },
+        { label: "Student", width: 140 },
+        { label: "Email", width: 210 },
+        { label: "Status", width: 110 }
+    ];
+
+    const rowHeight = 30;
+    const headerHeight = 30;
+    const bottomLimit = 700;
+
+    let y = doc.y + 6;
+    let segmentStart = y;
+
+    drawHeaderRow(y);
+    y += headerHeight;
+
+    attendance.forEach((record, idx) => {
+        if (y + rowHeight > bottomLimit) {
+            drawGrid(segmentStart, y);
+            doc.addPage();
+            y = 60;
+            segmentStart = y;
+            drawHeaderRow(y);
+            y += headerHeight;
+        }
+
+        if (idx % 2 === 0) {
+            doc.fillColor("#f8fafc").rect(PAGE_X, y, PAGE_WIDTH, rowHeight).fill();
+        }
+
+        drawRow(record, y);
+        y += rowHeight;
+    });
+
+    drawGrid(segmentStart, y);
+    doc.y = y + 15;
+
+    function drawHeaderRow(yPos) {
+        doc.fillColor(PRIMARY).rect(PAGE_X, yPos, PAGE_WIDTH, headerHeight).fill();
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(9.5);
+
+        let x = PAGE_X;
+        cols.forEach(col => {
+            doc.text(col.label, x, yPos + 11, { width: col.width, align: "center" });
+            x += col.width;
+        });
+    }
+
+    function drawRow(record, yPos) {
+        let x = PAGE_X;
+        const textY = yPos + 10;
+
+        doc.fillColor(DARK).font("Helvetica").fontSize(9.5);
+
+        doc.text(record.student?.rollNo || "-", x, textY, { width: cols[0].width, align: "center" });
+        x += cols[0].width;
+
+        doc.text(record.student?.name || "-", x, textY, { width: cols[1].width, align: "center" });
+        x += cols[1].width;
+
+        doc.text(record.student?.email || "-", x, textY, { width: cols[2].width, align: "center" });
+        x += cols[2].width;
+
+        const isPresent = record.status === "Present";
+        const pillWidth = 74;
+        const pillHeight = 16;
+        const pillX = x + (cols[3].width - pillWidth) / 2;
+        const pillY = yPos + (rowHeight - pillHeight) / 2;
+
+        doc.fillColor(isPresent ? SUCCESS : DANGER)
+            .roundedRect(pillX, pillY, pillWidth, pillHeight, 8)
+            .fill();
+
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(8)
+            .text(isPresent ? "PRESENT" : "ABSENT", pillX, pillY + 4, { width: pillWidth, align: "center" });
+    }
+
+    function drawGrid(top, bottom) {
+        doc.strokeColor(BORDER).lineWidth(0.5);
+        doc.rect(PAGE_X, top, PAGE_WIDTH, bottom - top).stroke();
+
+        let x = PAGE_X;
+        cols.forEach((col, i) => {
+            if (i > 0) {
+                doc.moveTo(x, top).lineTo(x, bottom).stroke();
+            }
+            x += col.width;
+        });
+    }
+}
+
+// ==========================================================
+// Summary Cards
+// ==========================================================
+
+function drawSummaryCards(doc, attendance) {
     const total = attendance.length;
     const present = attendance.filter(r => r.status === "Present").length;
     const absent = total - present;
-    const percentage = total === 0 ? 0 : ((present / total) * 100).toFixed(2);
+    const pct = total === 0 ? 0 : ((present / total) * 100).toFixed(1);
 
-    // Ensure the summary box (needs ~150px) fits on the current page
-    if (doc.y > 620) {
+    if (doc.y > 640) {
         doc.addPage();
-        drawTitle(doc);
     }
 
-    doc.moveDown();
-    sectionTitle(doc, "Attendance Summary");
+    doc.moveDown(0.5);
+    sectionTitle(doc, "Summary");
 
-    const boxY = doc.y;
+    const cards = [
+        { label: "TOTAL", value: String(total), color: PRIMARY },
+        { label: "PRESENT", value: String(present), color: SUCCESS },
+        { label: "ABSENT", value: String(absent), color: DANGER },
+        { label: "ATTENDANCE %", value: `${pct}%`, color: ACCENT }
+    ];
 
-    doc
-        .roundedRect(45, boxY, 510, 110, 8)
-        .lineWidth(1)
-        .strokeColor(BORDER)
-        .stroke();
+    const cardWidth = 118;
+    const gap = 12;
+    const y = doc.y;
+    const cardHeight = 65;
 
-    doc.font("Helvetica-Bold").fontSize(12).fillColor(DARK);
-    doc.text(`Total Students : ${total}`, 70, boxY + 20);
+    cards.forEach((card, i) => {
+        const x = PAGE_X + i * (cardWidth + gap);
 
-    doc.fillColor(SUCCESS).text(`Present : ${present}`, 70, boxY + 45);
-    doc.fillColor(DANGER).text(`Absent : ${absent}`, 70, boxY + 70);
+        doc.fillOpacity(0.1).fillColor(card.color)
+            .roundedRect(x, y, cardWidth, cardHeight, 6).fill();
 
-    doc
-        .fillColor(PRIMARY)
-        .fontSize(16)
-        .text(`${percentage}%`, 420, boxY + 40, { width: 100, align: "center" });
+        doc.fillOpacity(1)
+            .roundedRect(x, y, cardWidth, cardHeight, 6)
+            .lineWidth(1).strokeColor(card.color).stroke();
 
-    doc
-        .fillColor(LIGHT)
-        .fontSize(10)
-        .text("Attendance Percentage", 395, boxY + 70, { width: 150, align: "center" });
+        doc.fillColor(card.color).font("Helvetica-Bold").fontSize(8.5)
+            .text(card.label, x, y + 12, { width: cardWidth, align: "center" });
 
-    doc.y = boxY + 130;
+        doc.fillColor(DARK).font("Helvetica-Bold").fontSize(19)
+            .text(card.value, x, y + 30, { width: cardWidth, align: "center" });
+    });
+
+    doc.y = y + cardHeight + 22;
+}
+
+// ==========================================================
+// Signature Area
+// ==========================================================
+
+function drawSignatureArea(doc) {
+    if (doc.y > 690) {
+        doc.addPage();
+        doc.y = 60;
+    }
+
+    doc.moveDown(1);
+    const y = doc.y;
+
+    doc.fillColor(DARK).font("Helvetica").fontSize(10);
+    doc.text("Faculty Signature", PAGE_X, y);
+    doc.text("HOD Signature", 340, y);
+
+    doc.strokeColor(BORDER).lineWidth(1);
+    doc.moveTo(PAGE_X, y + 28).lineTo(PAGE_X + 175, y + 28).stroke();
+    doc.moveTo(340, y + 28).lineTo(340 + 175, y + 28).stroke();
+
+    doc.y = y + 45;
 }
 
 // ==========================================================
@@ -197,20 +309,23 @@ function drawFooter(doc) {
     for (let i = 0; i < range.count; i++) {
         doc.switchToPage(i);
 
-        doc.font("Helvetica").fontSize(9).fillColor(LIGHT);
+        doc.strokeColor(BORDER).lineWidth(0.5)
+            .moveTo(PAGE_X, 750).lineTo(PAGE_X + PAGE_WIDTH, 750).stroke();
+
+        doc.fillColor(LIGHT).font("Helvetica").fontSize(8);
 
         doc.text(
-            "Generated by FACREC Enterprise \u2022 SVNIT Surat",
-            50,
-            770,
-            { width: 500, align: "center" }
+            "Generated by FACREC Enterprise  \u2022  SVNIT Surat  \u2022  Confidential",
+            PAGE_X,
+            758,
+            { width: PAGE_WIDTH, align: "center" }
         );
 
         doc.text(
             `Page ${i + 1} of ${range.count}`,
-            50,
-            785,
-            { width: 500, align: "center" }
+            PAGE_X,
+            770,
+            { width: PAGE_WIDTH, align: "center" }
         );
     }
 }
@@ -224,6 +339,7 @@ const generateAttendancePDF = (session, attendance) => {
         try {
             const fileName = `Attendance_${Date.now()}.pdf`;
             const filePath = path.join(REPORTS_DIR, fileName);
+            const reportId = generateReportId();
 
             const doc = new PDFDocument({
                 margin: 45,
@@ -235,18 +351,20 @@ const generateAttendancePDF = (session, attendance) => {
             doc.pipe(stream);
 
             drawTitle(doc);
-            drawSessionInfo(doc, session);
+            drawReportMeta(doc, reportId);
+            drawSessionCard(doc, session);
 
             sectionTitle(doc, "Attendance Records");
-            drawAttendanceRows(doc, attendance);
+            drawAttendanceTable(doc, attendance);
 
-            drawSummary(doc, attendance);
+            drawSummaryCards(doc, attendance);
+            drawSignatureArea(doc);
+
             drawFooter(doc);
-
             doc.end();
 
             stream.on("finish", () => {
-                resolve({ success: true, fileName, filePath });
+                resolve({ success: true, fileName, filePath, reportId });
             });
 
             stream.on("error", (err) => reject(err));
