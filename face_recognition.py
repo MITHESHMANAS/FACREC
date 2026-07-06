@@ -1,3 +1,4 @@
+import json
 import cv2
 
 from subject_config import get_current_subject
@@ -11,36 +12,54 @@ from services.face_service import (
     extract_face,
     draw_prediction,
 )
-from services.attendance_service import mark_attendance
 
 
-def main():
+def recognize_once():
 
     trainset, names = load_face_dataset()
 
     if trainset is None:
+
         return {
+
             "success": False,
-            "message": "No face dataset found."
+
+            "recognized": [],
+
+            "total": 0,
+
+            "message": "Dataset not found"
+
         }
 
     detector = load_face_detector()
+
     cap = start_camera()
 
-    recognized_students = []
+    recognized = []
+
+    frame_count = 0
+
+    MAX_FRAMES = 150
 
     try:
 
-        while True:
+        while frame_count < MAX_FRAMES:
+
+            frame_count += 1
 
             ret, frame = cap.read()
 
             if not ret:
+
                 continue
 
             faces = detect_faces(
+
                 detector,
+
                 frame
+
             )
 
             for face in faces:
@@ -48,86 +67,94 @@ def main():
                 try:
 
                     face_img = extract_face(
+
                         frame,
+
                         face
+
                     )
 
                 except cv2.error:
+
                     continue
 
                 label, distance, confidence, unknown = predict(
+
                     trainset,
+
                     face_img
+
                 )
 
                 if unknown:
 
-                    student = "UNKNOWN"
+                    continue
 
-                else:
+                student = names[label]
 
-                    student = names[label]
+                recognized.append({
 
-                    # Current subject
-                    subject = get_current_subject()
+                    "name": student,
 
-                    # Mark attendance
-                    ##mark_attendance(
-                        ##student,
-                      ##  subject
-                    ##)
+                    "subject": get_current_subject(),
 
-                    # Avoid duplicate entries in same session
-                    already_exists = False
+                    "confidence": round(confidence,2),
 
-                    for s in recognized_students:
-                        if s["name"] == student:
-                            already_exists = True
-                            break
+                    "status":"Present"
 
-                    if not already_exists:
+                })
 
-                        recognized_students.append({
-                            "name": student,
-                            "subject": subject,
-                            "confidence": round(confidence, 2),
-                            "status": "Present"
-                        })
+                cap.release()
 
-                draw_prediction(
-                    frame,
-                    face,
-                    student,
-                    confidence,
-                    distance
-                )
+                cv2.destroyAllWindows()
+
+                return {
+
+                    "success":True,
+
+                    "recognized":recognized,
+
+                    "total":1
+
+                }
 
             cv2.imshow(
-                "FACREC Attendance System",
+
+                "FACREC Enterprise",
+
                 frame
+
             )
 
-            key = cv2.waitKey(1) & 0xFF
+            if cv2.waitKey(1)&0xFF==ord("q"):
 
-            if key == ord("q"):
                 break
 
     finally:
 
         cap.release()
+
         cv2.destroyAllWindows()
 
     return {
-        "success": True,
-        "recognized": recognized_students,
-        "total": len(recognized_students)
+
+        "success":True,
+
+        "recognized":[],
+
+        "total":0
+
     }
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
 
-    import json
+    print(
 
-    result = main()
+        json.dumps(
 
-    print(json.dumps(result))
+            recognize_once()
+
+        )
+
+    )

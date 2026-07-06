@@ -9,9 +9,10 @@ import Sessions from "../pages/Sessions";
 import Attendance from "../pages/Attendance";
 import Analytics from "../pages/Analytics";
 import Reports from "../pages/Reports";
+import StudentProfile from "../pages/StudentProfile";
+import Recognition from "../pages/Recognition";
 
 import ProtectedRoute from "../components/ProtectedRoute";
-import StudentProfile from "../pages/StudentProfile";
 
 const AppRoutes = () => {
 
@@ -21,10 +22,14 @@ const AppRoutes = () => {
 
             <Routes>
 
+                {/* Public Route */}
+
                 <Route
                     path="/login"
                     element={<Login />}
                 />
+
+                {/* Dashboard */}
 
                 <Route
                     path="/"
@@ -34,6 +39,8 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Students */}
 
                 <Route
                     path="/students"
@@ -45,6 +52,17 @@ const AppRoutes = () => {
                 />
 
                 <Route
+                    path="/students/:id"
+                    element={
+                        <ProtectedRoute>
+                            <StudentProfile />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Faculty */}
+
+                <Route
                     path="/faculty"
                     element={
                         <ProtectedRoute>
@@ -52,6 +70,8 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Subjects */}
 
                 <Route
                     path="/subjects"
@@ -62,6 +82,8 @@ const AppRoutes = () => {
                     }
                 />
 
+                {/* Sessions */}
+
                 <Route
                     path="/sessions"
                     element={
@@ -70,6 +92,8 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Attendance */}
 
                 <Route
                     path="/attendance"
@@ -80,6 +104,8 @@ const AppRoutes = () => {
                     }
                 />
 
+                {/* Analytics */}
+
                 <Route
                     path="/analytics"
                     element={
@@ -88,19 +114,25 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
-                 <Route
-    path="/students/:id"
-    element={
-        <ProtectedRoute>
-            <StudentProfile />
-        </ProtectedRoute>
-    }
-/>
+
+                {/* Reports */}
+
                 <Route
                     path="/reports"
                     element={
                         <ProtectedRoute>
                             <Reports />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recognition */}
+
+                <Route
+                    path="/recognition"
+                    element={
+                        <ProtectedRoute>
+                            <Recognition />
                         </ProtectedRoute>
                     }
                 />

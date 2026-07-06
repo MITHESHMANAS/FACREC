@@ -29,8 +29,6 @@ const Students = () => {
 
     const [open, setOpen] = useState(false);
 
-    console.log("OPEN =", open);
-
     const [editingStudent, setEditingStudent] = useState(null);
 
     const [deleteStudentData, setDeleteStudentData] = useState(null);
@@ -45,9 +43,7 @@ const Students = () => {
 
         }
 
-        catch (err) {
-
-            console.log(err);
+        catch {
 
             toast.error("Failed to load students");
 
@@ -80,7 +76,7 @@ const Students = () => {
                     student
                 );
 
-                toast.success("Student Updated Successfully");
+                toast.success("Student Updated");
 
             }
 
@@ -88,7 +84,7 @@ const Students = () => {
 
                 await createStudent(student);
 
-                toast.success("Student Added Successfully");
+                toast.success("Student Added");
 
             }
 
@@ -176,13 +172,9 @@ const Students = () => {
 
         return (
 
-            student.name.toLowerCase().includes(text)
+            student.name.toLowerCase().includes(text) ||
 
-            ||
-
-            student.rollNo.toLowerCase().includes(text)
-
-            ||
+            student.rollNo.toLowerCase().includes(text) ||
 
             student.email.toLowerCase().includes(text)
 
@@ -202,13 +194,23 @@ const Students = () => {
 
                 <div className="p-8">
 
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex justify-between items-center mb-8">
 
-                        <h1 className="text-3xl font-bold">
+                        <div>
 
-                            Students
+                            <h1 className="text-4xl font-bold">
 
-                        </h1>
+                                Students
+
+                            </h1>
+
+                            <p className="text-gray-500 mt-1">
+
+                                Manage student records and profiles
+
+                            </p>
+
+                        </div>
 
                         <RoleGuard roles={["admin"]}>
 
@@ -222,7 +224,7 @@ const Students = () => {
 
                                 }}
 
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow"
 
                             >
 
@@ -234,7 +236,7 @@ const Students = () => {
 
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
 
                         <StatsCard
                             title="Total Students"
@@ -243,9 +245,15 @@ const Students = () => {
                         />
 
                         <StatsCard
+                            title="Active"
+                            value={students.filter(s => s.isActive).length}
+                            color="text-green-600"
+                        />
+
+                        <StatsCard
                             title="CSE"
                             value={students.filter(s => s.branch === "CSE").length}
-                            color="text-green-600"
+                            color="text-blue-600"
                         />
 
                         <StatsCard
@@ -276,16 +284,11 @@ const Students = () => {
 
                     {
 
-                        loading
+                        loading ?
 
-                            ?
+                            <div className="flex justify-center py-20">
 
-                            <div className="flex justify-center py-16">
-
-                                <BeatLoader
-                                    color="#4f46e5"
-                                    size={15}
-                                />
+                                <BeatLoader color="#4f46e5" />
 
                             </div>
 
@@ -311,19 +314,7 @@ const Students = () => {
 
                 isOpen={open}
 
-                title={
-
-                    editingStudent
-
-                        ?
-
-                        "Edit Student"
-
-                        :
-
-                        "Add Student"
-
-                }
+                title={editingStudent ? "Edit Student" : "Add Student"}
 
                 onClose={() => {
 
@@ -355,15 +346,13 @@ const Students = () => {
 
                 message={
 
-                    deleteStudentData
+                    deleteStudentData ?
 
-                        ?
+                    `Delete ${deleteStudentData.name}?`
 
-                        `Delete ${deleteStudentData.name}?`
+                    :
 
-                        :
-
-                        ""
+                    ""
 
                 }
 

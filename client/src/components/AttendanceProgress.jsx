@@ -1,53 +1,177 @@
+import {
+    CircularProgressbar,
+    buildStyles
+} from "react-circular-progressbar";
+
+import "react-circular-progressbar/dist/styles.css";
+
+import {
+    FaClipboardCheck,
+    FaChartLine,
+    FaAward
+} from "react-icons/fa";
+
 const AttendanceProgress = ({ attendance }) => {
 
     const percentage = attendance?.percentage || 0;
 
-    const color =
-        percentage >= 75
-            ? "bg-green-500"
-            : percentage >= 50
-            ? "bg-yellow-500"
-            : "bg-red-500";
+    let color = "#ef4444";
+    let status = "Needs Improvement";
+    let message = "Attendance is below the required threshold.";
+
+    if (percentage >= 90) {
+
+        color = "#22c55e";
+
+        status = "Excellent";
+
+        message =
+            "Outstanding attendance record. Keep it up!";
+
+    }
+
+    else if (percentage >= 75) {
+
+        color = "#f59e0b";
+
+        status = "Good";
+
+        message =
+            "Attendance is satisfactory. Aim for 90%+.";
+
+    }
 
     return (
 
         <div className="bg-white rounded-2xl shadow-lg p-6">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-8">
 
                 Attendance Progress
 
             </h2>
 
-            <div className="w-full bg-gray-200 rounded-full h-6">
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
 
-                <div
+                <div className="w-56 h-56 mx-auto">
 
-                    className={`${color} h-6 rounded-full transition-all duration-700`}
+                    <CircularProgressbar
 
-                    style={{
+                        value={percentage}
 
-                        width: `${percentage}%`
+                        text={`${percentage}%`}
 
-                    }}
+                        styles={buildStyles({
 
-                />
+                            textColor: color,
 
-            </div>
+                            pathColor: color,
 
-            <div className="flex justify-between mt-4">
+                            trailColor: "#e5e7eb",
 
-                <span>
+                            textSize: "16px"
 
-                    Attendance
+                        })}
 
-                </span>
+                    />
 
-                <span className="font-bold">
+                </div>
 
-                    {percentage}%
+                <div>
 
-                </span>
+                    <div className="flex items-center gap-3 mb-5">
+
+                        <FaAward
+                            className="text-3xl"
+                            style={{ color }}
+                        />
+
+                        <div>
+
+                            <h2
+                                className="text-2xl font-bold"
+                                style={{ color }}
+                            >
+
+                                {status}
+
+                            </h2>
+
+                            <p className="text-gray-500">
+
+                                {message}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div className="space-y-4">
+
+                        <div className="flex justify-between bg-slate-100 rounded-xl p-4">
+
+                            <div className="flex gap-3 items-center">
+
+                                <FaClipboardCheck className="text-green-600"/>
+
+                                <span>
+
+                                    Present
+
+                                </span>
+
+                            </div>
+
+                            <strong>
+
+                                {attendance.present}
+
+                            </strong>
+
+                        </div>
+
+                        <div className="flex justify-between bg-slate-100 rounded-xl p-4">
+
+                            <div className="flex gap-3 items-center">
+
+                                <FaChartLine className="text-red-500"/>
+
+                                <span>
+
+                                    Absent
+
+                                </span>
+
+                            </div>
+
+                            <strong>
+
+                                {attendance.absent}
+
+                            </strong>
+
+                        </div>
+
+                        <div className="flex justify-between bg-slate-100 rounded-xl p-4">
+
+                            <span>
+
+                                Total Classes
+
+                            </span>
+
+                            <strong>
+
+                                {attendance.total}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 

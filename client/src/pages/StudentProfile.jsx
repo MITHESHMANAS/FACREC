@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { BeatLoader } from "react-spinners";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 import ProfileHeader from "../components/ProfileHeader";
 import AttendanceProgress from "../components/AttendanceProgress";
+import AttendanceHealth from "../components/AttendanceHealth";
 import SubjectPerformance from "../components/SubjectPerformance";
 import AttendanceHistory from "../components/AttendanceHistory";
+import RecognitionTimeline from "../components/RecognitionTimeline";
 
 import { getStudentProfile } from "../services/studentProfileService";
 
@@ -17,7 +20,6 @@ const StudentProfile = () => {
     const { id } = useParams();
 
     const [profile, setProfile] = useState(null);
-
     const [loading, setLoading] = useState(true);
 
     const loadProfile = async () => {
@@ -30,9 +32,15 @@ const StudentProfile = () => {
 
         }
 
-        catch {
+        catch (err) {
 
-            toast.error("Unable to load profile");
+            toast.error(
+
+                err.response?.data?.message ||
+
+                "Unable to load profile"
+
+            );
 
         }
 
@@ -48,7 +56,7 @@ const StudentProfile = () => {
 
         loadProfile();
 
-    }, []);
+    }, [id]);
 
     if (loading) {
 
@@ -56,7 +64,21 @@ const StudentProfile = () => {
 
             <div className="flex justify-center items-center h-screen">
 
-                Loading...
+                <BeatLoader color="#4f46e5" />
+
+            </div>
+
+        );
+
+    }
+
+    if (!profile) {
+
+        return (
+
+            <div className="flex justify-center items-center h-screen">
+
+                Student not found.
 
             </div>
 
@@ -74,33 +96,60 @@ const StudentProfile = () => {
 
                 <Navbar />
 
-                <div className="p-8 space-y-6">
+                <div className="p-8">
+
+                    <div className="mb-8">
+
+                        <h1 className="text-4xl font-bold">
+
+                            Student Profile
+
+                        </h1>
+
+                        <p className="text-gray-500 mt-2">
+
+                            Attendance analytics and recognition insights.
+
+                        </p>
+
+                    </div>
 
                     <ProfileHeader
-
                         student={profile.student}
-
                         attendance={profile.attendance}
-
                     />
 
-                    <AttendanceProgress
+                    <div className="grid lg:grid-cols-2 gap-6 mt-8">
 
-                        attendance={profile.attendance}
+                        <AttendanceProgress
+                            attendance={profile.attendance}
+                        />
 
-                    />
+                        <AttendanceHealth
+                            attendance={profile.attendance}
+                        />
 
-                    <SubjectPerformance
+                    </div>
 
-                        subjects={profile.subjects}
+                    <div className="mt-8">
 
-                    />
+                        <SubjectPerformance
+                            subjects={profile.subjects}
+                        />
 
-                    <AttendanceHistory
+                    </div>
 
-                        history={profile.history}
+                    <div className="grid xl:grid-cols-2 gap-6 mt-8">
 
-                    />
+                        <AttendanceHistory
+                            history={profile.history}
+                        />
+
+                        <RecognitionTimeline
+                            history={profile.history}
+                        />
+
+                    </div>
 
                 </div>
 

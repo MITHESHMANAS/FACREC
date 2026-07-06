@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { FaUserGraduate, FaEye } from "react-icons/fa";
+
 import ActionButtons from "./ActionButtons";
 import RoleGuard from "./RoleGuard";
 import StatusBadge from "./StatusBadge";
@@ -8,19 +11,23 @@ const StudentTable = ({ students, onEdit, onDelete }) => {
 
         return (
 
-            <div className="bg-white rounded-xl shadow p-10 text-center text-gray-500">
+            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
 
-                📭
+                <div className="text-6xl mb-4">
 
-                <p className="mt-4 text-xl font-semibold">
+                    📭
+
+                </div>
+
+                <h2 className="text-2xl font-bold">
 
                     No Students Found
 
-                </p>
+                </h2>
 
-                <p className="text-gray-400 mt-2">
+                <p className="text-gray-500 mt-3">
 
-                    Try changing your search.
+                    Try changing your search or add a new student.
 
                 </p>
 
@@ -32,114 +39,211 @@ const StudentTable = ({ students, onEdit, onDelete }) => {
 
     return (
 
-        <div className="overflow-x-auto rounded-xl shadow bg-white">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
 
-            <table className="min-w-full">
+            <div className="overflow-x-auto">
 
-                <thead className="bg-indigo-600 text-white">
+                <table className="min-w-full">
 
-                    <tr>
+                    <thead className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
 
-                        <th className="p-4 text-left">Roll No</th>
+                        <tr>
 
-                        <th className="text-left">Name</th>
+                            <th className="px-6 py-4 text-left">
 
-                        <th className="text-left">Branch</th>
-
-                        <th className="text-left">Semester</th>
-
-                        <th className="text-left">Email</th>
-
-                        <th className="text-center">Status</th>
-
-                        <RoleGuard roles={["admin"]}>
-
-                            <th className="text-center">
-
-                                Actions
+                                Student
 
                             </th>
 
-                        </RoleGuard>
+                            <th className="px-6 py-4 text-left">
 
-                    </tr>
+                                Roll No
 
-                </thead>
+                            </th>
 
-                <tbody>
+                            <th className="px-6 py-4 text-left">
 
-                    {
+                                Branch
 
-                        students.map((student) => (
+                            </th>
 
-                            <tr
-                                key={student._id}
-                                className="border-b hover:bg-slate-50 transition"
-                            >
+                            <th className="px-6 py-4 text-center">
 
-                                <td className="p-4">
+                                Semester
 
-                                    {student.rollNo}
+                            </th>
 
-                                </td>
+                            <th className="px-6 py-4 text-left">
 
-                                <td>
+                                Email
 
-                                    {student.name}
+                            </th>
 
-                                </td>
+                            <th className="px-6 py-4 text-center">
 
-                                <td>
+                                Status
 
-                                    {student.branch}
+                            </th>
 
-                                </td>
+                            <th className="px-6 py-4 text-center">
 
-                                <td>
+                                Profile
 
-                                    {student.semester}
+                            </th>
 
-                                </td>
+                            <RoleGuard roles={["admin"]}>
 
-                                <td>
+                                <th className="px-6 py-4 text-center">
 
-                                    {student.email}
+                                    Actions
 
-                                </td>
+                                </th>
 
-                                <td className="text-center">
+                            </RoleGuard>
 
-                                    <StatusBadge
-                                        active={student.isActive}
-                                    />
+                        </tr>
 
-                                </td>
+                    </thead>
 
-                                <RoleGuard roles={["admin"]}>
+                    <tbody>
 
-                                    <td className="text-center">
+                        {
 
-                                        <ActionButtons
+                            students.map((student, index) => (
 
-                                            onEdit={() => onEdit(student)}
+                                <tr
 
-                                            onDelete={() => onDelete(student)}
+                                    key={student._id}
+
+                                    className={`border-b transition hover:bg-indigo-50 ${
+
+                                        index % 2 === 0
+
+                                            ? "bg-white"
+
+                                            : "bg-slate-50"
+
+                                    }`}
+
+                                >
+
+                                    <td className="px-6 py-5">
+
+                                        <div className="flex items-center gap-4">
+
+                                            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+
+                                                <FaUserGraduate
+
+                                                    className="text-indigo-600 text-xl"
+
+                                                />
+
+                                            </div>
+
+                                            <div>
+
+                                                <h3 className="font-bold">
+
+                                                    {student.name}
+
+                                                </h3>
+
+                                                <p className="text-sm text-gray-500">
+
+                                                    Student
+
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td className="px-6 py-5 font-semibold">
+
+                                        {student.rollNo}
+
+                                    </td>
+
+                                    <td className="px-6 py-5">
+
+                                        {student.branch}
+
+                                    </td>
+
+                                    <td className="px-6 py-5 text-center">
+
+                                        <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+
+                                            {student.semester}
+
+                                        </span>
+
+                                    </td>
+
+                                    <td className="px-6 py-5">
+
+                                        {student.email}
+
+                                    </td>
+
+                                    <td className="px-6 py-5 text-center">
+
+                                        <StatusBadge
+
+                                            active={student.isActive}
 
                                         />
 
                                     </td>
 
-                                </RoleGuard>
+                                    <td className="px-6 py-5 text-center">
 
-                            </tr>
+                                        <Link
 
-                        ))
+                                            to={`/students/${student._id}`}
 
-                    }
+                                            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
 
-                </tbody>
+                                        >
 
-            </table>
+                                            <FaEye />
+
+                                            View
+
+                                        </Link>
+
+                                    </td>
+
+                                    <RoleGuard roles={["admin"]}>
+
+                                        <td className="px-6 py-5 text-center">
+
+                                            <ActionButtons
+
+                                                onEdit={() => onEdit(student)}
+
+                                                onDelete={() => onDelete(student)}
+
+                                            />
+
+                                        </td>
+
+                                    </RoleGuard>
+
+                                </tr>
+
+                            ))
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
 
         </div>
 

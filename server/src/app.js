@@ -13,6 +13,9 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const app = express();
 const studentProfileRoutes =require("./routes/studentProfileRoutes");
+const recognitionEngineRoutes =
+require("./routes/recognitionEngineRoutes");
+
 app.use(cors());
 app.use(express.json());
 
@@ -45,6 +48,10 @@ app.use(
 app.use(
     "/api/student-profile",
     studentProfileRoutes
+);
+app.use(
+    "/api/engine",
+    recognitionEngineRoutes
 );
 module.exports = app;
 
