@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { FaCalendarAlt, FaClock } from "react-icons/fa";
+
 import { getSubjects } from "../services/masterDataService";
+import FormInput from "./ui/FormInput";
+import FormSelect from "./ui/FormSelect";
+import Button from "./ui/Button";
 
 const SessionForm = ({
     onSubmit,
@@ -23,11 +28,8 @@ const SessionForm = ({
     useEffect(() => {
 
         const loadSubjects = async () => {
-
             const data = await getSubjects();
-
             setSubjects(data);
-
         };
 
         loadSubjects();
@@ -64,161 +66,117 @@ const SessionForm = ({
     useEffect(() => {
 
         const subject = subjects.find(
-
             s => s._id === selectedSubjectId
-
         );
 
         if (!subject) return;
 
         setValue("faculty", subject.faculty);
-
         setValue("semester", subject.semester);
-
         setValue("branch", subject.branch);
 
     }, [selectedSubjectId, subjects, setValue]);
 
     return (
 
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
             <div>
 
-                <label className="font-medium">
-                    Subject
-                </label>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Subject Selection
+                </p>
 
-                <select
-                    {...register("subject")}
-                    className="w-full border rounded-lg p-3"
-                >
+                <div className="space-y-4">
 
-                    <option value="">
-                        Select Subject
-                    </option>
+                    <FormSelect label="Subject" {...register("subject")}>
+                        <option value="">Select Subject</option>
+                        {
+                            subjects.map(subject => (
+                                <option key={subject._id} value={subject._id}>
+                                    {subject.code} - {subject.name}
+                                </option>
+                            ))
+                        }
+                    </FormSelect>
 
-                    {
+                    <div className="grid grid-cols-3 gap-4">
 
-                        subjects.map(subject => (
+                        <FormInput
+                            label="Faculty"
+                            readOnly
+                            disabled
+                            {...register("faculty")}
+                        />
 
-                            <option
-                                key={subject._id}
-                                value={subject._id}
-                            >
+                        <FormInput
+                            label="Semester"
+                            readOnly
+                            disabled
+                            {...register("semester")}
+                        />
 
-                                {subject.code} - {subject.name}
+                        <FormInput
+                            label="Branch"
+                            readOnly
+                            disabled
+                            {...register("branch")}
+                        />
 
-                            </option>
+                    </div>
 
-                        ))
-
-                    }
-
-                </select>
-
-            </div>
-
-            <div>
-
-                <label>Faculty</label>
-
-                <input
-                    readOnly
-                    {...register("faculty")}
-                    className="w-full border rounded-lg p-3 bg-gray-100"
-                />
-
-            </div>
-
-            <div>
-
-                <label>Semester</label>
-
-                <input
-                    readOnly
-                    {...register("semester")}
-                    className="w-full border rounded-lg p-3 bg-gray-100"
-                />
+                </div>
 
             </div>
 
-            <div>
+            <div className="pt-5 border-t border-slate-100">
 
-                <label>Branch</label>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Schedule
+                </p>
 
-                <input
-                    readOnly
-                    {...register("branch")}
-                    className="w-full border rounded-lg p-3 bg-gray-100"
-                />
+                <div className="space-y-4">
 
-            </div>
+                    <FormInput
+                        label="Date"
+                        type="date"
+                        icon={FaCalendarAlt}
+                        {...register("date")}
+                    />
 
-            <div>
+                    <div className="grid grid-cols-2 gap-4">
 
-                <label>Date</label>
+                        <FormInput
+                            label="Start Time"
+                            type="time"
+                            icon={FaClock}
+                            {...register("startTime")}
+                        />
 
-                <input
-                    type="date"
-                    {...register("date")}
-                    className="w-full border rounded-lg p-3"
-                />
+                        <FormInput
+                            label="End Time"
+                            type="time"
+                            icon={FaClock}
+                            {...register("endTime")}
+                        />
 
-            </div>
+                    </div>
 
-            <div>
-
-                <label>Start Time</label>
-
-                <input
-                    type="time"
-                    {...register("startTime")}
-                    className="w-full border rounded-lg p-3"
-                />
-
-            </div>
-
-            <div>
-
-                <label>End Time</label>
-
-                <input
-                    type="time"
-                    {...register("endTime")}
-                    className="w-full border rounded-lg p-3"
-                />
+                </div>
 
             </div>
 
-            <input
-                type="hidden"
-                {...register("status")}
-            />
+            <input type="hidden" {...register("status")} />
 
-            <button
-                disabled={loading}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg"
-            >
-
+            <Button type="submit" loading={loading} className="w-full" size="lg">
                 {
-
                     loading
-
                         ? "Saving..."
-
                         : initialData
-
                             ? "Update Session"
-
                             : "Create Session"
-
                 }
-
-            </button>
+            </Button>
 
         </form>
 

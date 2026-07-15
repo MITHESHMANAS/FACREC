@@ -35,4 +35,11 @@ router.delete(
     controller.deleteFaculty
 );
 
+router.patch(
+    "/:id/link-user",
+    protect,
+    authorize("admin"),
+    controller.linkUser
+);
+
 module.exports = router;

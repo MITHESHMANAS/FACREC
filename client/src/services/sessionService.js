@@ -29,3 +29,8 @@ export const completeSession = async (id) => {
     const { data } = await api.patch(`/sessions/${id}/complete`);
     return data;
 };
+
+export const reopenSession = async (id) => {
+    const { data } = await api.patch(`/sessions/${id}/reopen`);
+    return data;
+};

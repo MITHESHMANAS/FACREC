@@ -2,20 +2,24 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 
 const ActionButtons = ({ onEdit, onDelete }) => {
     return (
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-2 justify-center">
 
             <button
                 onClick={onEdit}
-                className="text-blue-600 hover:text-blue-800"
+                aria-label="Edit"
+                title="Edit"
+                className="w-8 h-8 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:border-indigo-300 flex items-center justify-center transition"
             >
-                <FaEdit />
+                <FaEdit className="text-xs" />
             </button>
 
             <button
                 onClick={onDelete}
-                className="text-red-600 hover:text-red-800"
+                aria-label="Delete"
+                title="Delete"
+                className="w-8 h-8 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 flex items-center justify-center transition"
             >
-                <FaTrash />
+                <FaTrash className="text-xs" />
             </button>
 
         </div>

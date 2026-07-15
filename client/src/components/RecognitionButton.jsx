@@ -38,6 +38,7 @@ export default function RecognitionButton() {
         <button
             onClick={handleRecognition}
             disabled={loading}
+            className="btn btn-primary"
         >
 
             {

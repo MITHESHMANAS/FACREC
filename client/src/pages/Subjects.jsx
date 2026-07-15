@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BeatLoader } from "react-spinners";
+import CardSkeleton from "../components/ui/CardSkeleton";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import AppLayout from "../layouts/AppLayout";
 import SearchBar from "../components/SearchBar";
 import Modal from "../components/Modal";
 import ConfirmModal from "../components/ConfirmModal";
 import RoleGuard from "../components/RoleGuard";
-import StatsCard from "../components/StatsCard";
-import SubjectTable from "../components/SubjectTable";
+import {
+    FaBook,
+    FaBuilding,
+    FaUserTie,
+    FaSyncAlt
+} from "react-icons/fa";
+import KpiCard from "../components/ui/KpiCard";
+import EmptyState from "../components/ui/EmptyState";
+import SubjectCard from "../components/SubjectCard";
 import SubjectForm from "../components/SubjectForm";
 
 import {
@@ -184,19 +190,11 @@ const Subjects = () => {
 
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
-
-            <Sidebar />
-
-            <div className="flex-1">
-
-                <Navbar />
-
-                <div className="p-8">
+        <AppLayout>
 
                     <div className="flex justify-between items-center mb-6">
 
-                        <h1 className="text-3xl font-bold">
+                        <h1 className="text-3xl font-semibold tracking-tight">
 
                             Subjects
 
@@ -214,7 +212,7 @@ const Subjects = () => {
 
                                 }}
 
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-[14px] font-semibold text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150"
 
                             >
 
@@ -226,40 +224,52 @@ const Subjects = () => {
 
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
-                        <StatsCard
+                        <KpiCard
+                            index={0}
                             title="Subjects"
                             value={subjects.length}
-                            color="text-indigo-600"
+                            icon={FaBook}
+                            tone="indigo"
                         />
 
-                        <StatsCard
-                            title="Semester 5"
-                            value={subjects.filter(s => s.semester === 5).length}
-                            color="text-green-600"
+                        <KpiCard
+                            index={1}
+                            title="Faculty Assigned"
+                            value={subjects.filter(s => s.faculty).length}
+                            icon={FaUserTie}
+                            tone="amber"
                         />
 
-                        <StatsCard
-                            title="CSE"
-                            value={subjects.filter(s => s.branch === "CSE").length}
-                            color="text-orange-600"
-                        />
-
-                        <StatsCard
-                            title="Active"
-                            value={subjects.filter(s => s.isActive).length}
-                            color="text-blue-600"
+                        <KpiCard
+                            index={2}
+                            title="Branches"
+                            value={new Set(subjects.map(s => s.branch).filter(Boolean)).size}
+                            icon={FaBuilding}
+                            tone="slate"
                         />
 
                     </div>
 
-                    <div className="mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 
                         <SearchBar
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search by code, name or faculty..."
                         />
+
+                        <button
+                            onClick={() => {
+                                setLoading(true);
+                                loadSubjects();
+                            }}
+                            className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-[14px] text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <FaSyncAlt className={loading ? "animate-spin" : ""} />
+                            Refresh
+                        </button>
 
                     </div>
 
@@ -269,27 +279,40 @@ const Subjects = () => {
 
                             ?
 
-                            <div className="flex justify-center py-16">
-
-                                <BeatLoader
-                                    color="#4f46e5"
-                                />
-
-                            </div>
+                            <CardSkeleton cards={6} />
 
                             :
 
-                            <SubjectTable
-                                subjects={filteredSubjects}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
+                            filteredSubjects.length === 0
+
+                                ?
+
+                                <EmptyState
+                                    icon={FaBook}
+                                    title="No Subjects Found"
+                                    message="Add your first subject."
+                                />
+
+                                :
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                    {filteredSubjects.map((subject) => (
+
+                                        <SubjectCard
+                                            key={subject._id}
+                                            subject={subject}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                        />
+
+                                    ))}
+
+                                </div>
 
                     }
 
-                </div>
 
-            </div>
 
             <Modal
 
@@ -359,7 +382,7 @@ const Subjects = () => {
 
             />
 
-        </div>
+        </AppLayout>
 
     );
 

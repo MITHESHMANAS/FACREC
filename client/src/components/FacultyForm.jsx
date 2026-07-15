@@ -1,5 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { FaUser, FaEnvelope, FaIdCard } from "react-icons/fa";
+
+import FormInput from "./ui/FormInput";
+import FormSelect from "./ui/FormSelect";
+import Button from "./ui/Button";
 
 const FacultyForm = ({
     onSubmit,
@@ -17,11 +22,8 @@ const FacultyForm = ({
     useEffect(() => {
 
         if (initialData) {
-
             reset(initialData);
-
         } else {
-
             reset({
                 name: "",
                 email: "",
@@ -29,103 +31,87 @@ const FacultyForm = ({
                 department: "CSE",
                 designation: "Professor"
             });
-
         }
 
     }, [initialData, reset]);
 
     return (
 
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
             <div>
 
-                <label>Name</label>
-
-                <input
-                    {...register("name", { required: "Required" })}
-                    className="w-full border rounded-lg p-3"
-                />
-
-                <p className="text-red-500 text-sm">
-                    {errors.name?.message}
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Personal Information
                 </p>
 
-            </div>
+                <div className="space-y-4">
 
-            <div>
+                    <FormInput
+                        label="Name"
+                        icon={FaUser}
+                        placeholder="Full name"
+                        error={errors.name?.message}
+                        {...register("name", { required: "Required" })}
+                    />
 
-                <label>Email</label>
+                    <FormInput
+                        label="Email"
+                        type="email"
+                        icon={FaEnvelope}
+                        placeholder="faculty@college.edu"
+                        error={errors.email?.message}
+                        {...register("email", { required: "Required" })}
+                    />
 
-                <input
-                    type="email"
-                    {...register("email", { required: "Required" })}
-                    className="w-full border rounded-lg p-3"
-                />
-
-            </div>
-
-            <div>
-
-                <label>Employee ID</label>
-
-                <input
-                    {...register("employeeId", { required: "Required" })}
-                    className="w-full border rounded-lg p-3"
-                />
+                </div>
 
             </div>
 
-            <div>
+            <div className="pt-5 border-t border-slate-100">
 
-                <label>Department</label>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Professional Details
+                </p>
 
-                <select
-                    {...register("department")}
-                    className="w-full border rounded-lg p-3"
-                >
+                <div className="space-y-4">
 
-                    <option>CSE</option>
-                    <option>ECE</option>
-                    <option>ME</option>
-                    <option>CE</option>
+                    <FormInput
+                        label="Employee ID"
+                        icon={FaIdCard}
+                        placeholder="e.g. EMP1024"
+                        error={errors.employeeId?.message}
+                        {...register("employeeId", { required: "Required" })}
+                    />
 
-                </select>
+                    <div className="grid grid-cols-2 gap-4">
+
+                        <FormSelect label="Department" {...register("department")}>
+                            <option>CSE</option>
+                            <option>ECE</option>
+                            <option>ME</option>
+                            <option>CE</option>
+                        </FormSelect>
+
+                        <FormSelect label="Designation" {...register("designation")}>
+                            <option>Professor</option>
+                            <option>Associate Professor</option>
+                            <option>Assistant Professor</option>
+                        </FormSelect>
+
+                    </div>
+
+                </div>
 
             </div>
 
-            <div>
-
-                <label>Designation</label>
-
-                <select
-                    {...register("designation")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    <option>Professor</option>
-                    <option>Associate Professor</option>
-                    <option>Assistant Professor</option>
-
-                </select>
-
-            </div>
-
-            <button
-                disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg"
-            >
-
+            <Button type="submit" loading={loading} className="w-full" size="lg">
                 {
                     loading
                         ? (initialData ? "Updating..." : "Adding...")
                         : (initialData ? "Update Faculty" : "Add Faculty")
                 }
-
-            </button>
+            </Button>
 
         </form>
 

@@ -28,7 +28,9 @@ const getAttendance = async (req, res) => {
 
     try {
 
-        const attendance = await attendanceService.getAttendance();
+        const attendance = await attendanceService.getAttendance({
+            session: req.query.session
+        });
 
         res.json({
             success: true,

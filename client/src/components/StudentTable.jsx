@@ -1,104 +1,89 @@
 import { Link } from "react-router-dom";
-import { FaUserGraduate, FaEye } from "react-icons/fa";
+import { FaUserGraduate, FaEye, FaInbox, FaBuilding } from "react-icons/fa";
 
 import ActionButtons from "./ActionButtons";
 import RoleGuard from "./RoleGuard";
 import StatusBadge from "./StatusBadge";
+import EmptyState from "./ui/EmptyState";
+import Pagination from "./ui/Pagination";
+import SortableTh from "./ui/SortableTh";
+import useDataTable from "../hooks/useDataTable";
+
+const getSortValue = (student, field) => {
+
+    switch (field) {
+        case "name": return student.name?.toLowerCase();
+        case "rollNo": return student.rollNo?.toLowerCase();
+        case "branch": return student.branch?.toLowerCase();
+        case "semester": return student.semester;
+        case "email": return student.email?.toLowerCase();
+        case "status": return student.isActive ? 1 : 0;
+        default: return null;
+    }
+
+};
 
 const StudentTable = ({ students, onEdit, onDelete }) => {
+
+    const { rows, page, setPage, totalPages, pageSize, total, sortField, sortDir, toggleSort } =
+        useDataTable(students, { pageSize: 8, getSortValue });
 
     if (students.length === 0) {
 
         return (
-
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-
-                <div className="text-6xl mb-4">
-
-                    📭
-
-                </div>
-
-                <h2 className="text-2xl font-bold">
-
-                    No Students Found
-
-                </h2>
-
-                <p className="text-gray-500 mt-3">
-
-                    Try changing your search or add a new student.
-
-                </p>
-
-            </div>
-
+            <EmptyState
+                icon={FaInbox}
+                title="No students found"
+                message="Try changing your search or add a new student."
+            />
         );
 
     }
 
     return (
 
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-[20px] shadow-sm border border-slate-200 overflow-hidden">
 
             <div className="overflow-x-auto">
 
-                <table className="min-w-full">
+                <table className="min-w-full text-sm">
 
-                    <thead className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+                    <thead className="bg-slate-50 text-slate-600 sticky top-0 text-xs uppercase tracking-wide">
 
                         <tr>
 
-                            <th className="px-6 py-4 text-left">
-
+                            <SortableTh field="name" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>
                                 Student
+                            </SortableTh>
 
-                            </th>
-
-                            <th className="px-6 py-4 text-left">
-
+                            <SortableTh field="rollNo" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>
                                 Roll No
+                            </SortableTh>
 
-                            </th>
-
-                            <th className="px-6 py-4 text-left">
-
+                            <SortableTh field="branch" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>
                                 Branch
+                            </SortableTh>
 
-                            </th>
-
-                            <th className="px-6 py-4 text-center">
-
+                            <SortableTh field="semester" sortField={sortField} sortDir={sortDir} onSort={toggleSort} align="center">
                                 Semester
+                            </SortableTh>
 
-                            </th>
-
-                            <th className="px-6 py-4 text-left">
-
+                            <SortableTh field="email" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>
                                 Email
+                            </SortableTh>
 
-                            </th>
-
-                            <th className="px-6 py-4 text-center">
-
+                            <SortableTh field="status" sortField={sortField} sortDir={sortDir} onSort={toggleSort} align="center">
                                 Status
+                            </SortableTh>
 
-                            </th>
-
-                            <th className="px-6 py-4 text-center">
-
+                            <SortableTh align="center">
                                 Profile
-
-                            </th>
+                            </SortableTh>
 
                             <RoleGuard roles={["admin"]}>
-
-                                <th className="px-6 py-4 text-center">
-
+                                <SortableTh align="center">
                                     Actions
-
-                                </th>
-
+                                </SortableTh>
                             </RoleGuard>
 
                         </tr>
@@ -108,135 +93,74 @@ const StudentTable = ({ students, onEdit, onDelete }) => {
                     <tbody>
 
                         {
-
-                            students.map((student, index) => (
-
+                            rows.map((student) => (
                                 <tr
-
                                     key={student._id}
-
-                                    className={`border-b transition hover:bg-indigo-50 ${
-
-                                        index % 2 === 0
-
-                                            ? "bg-white"
-
-                                            : "bg-slate-50"
-
-                                    }`}
-
+                                    className="border-b border-slate-100 last:border-0 transition hover:bg-indigo-50/60"
                                 >
 
-                                    <td className="px-6 py-5">
-
-                                        <div className="flex items-center gap-4">
-
-                                            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-
-                                                <FaUserGraduate
-
-                                                    className="text-indigo-600 text-xl"
-
-                                                />
-
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3.5">
+                                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                                                <FaUserGraduate className="text-indigo-600" />
                                             </div>
-
-                                            <div>
-
-                                                <h3 className="font-bold">
-
+                                            <div className="min-w-0">
+                                                <h3 className="font-semibold text-slate-800 truncate">
                                                     {student.name}
-
                                                 </h3>
-
-                                                <p className="text-sm text-gray-500">
-
+                                                <p className="text-xs text-slate-400">
                                                     Student
-
                                                 </p>
-
                                             </div>
-
                                         </div>
-
                                     </td>
 
-                                    <td className="px-6 py-5 font-semibold">
-
+                                    <td className="px-6 py-4 font-medium text-slate-600">
                                         {student.rollNo}
-
                                     </td>
 
-                                    <td className="px-6 py-5">
-
-                                        {student.branch}
-
-                                    </td>
-
-                                    <td className="px-6 py-5 text-center">
-
-                                        <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-
-                                            {student.semester}
-
+                                    <td className="px-6 py-4">
+                                        <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                                            <FaBuilding className="text-[10px]" />
+                                            {student.branch}
                                         </span>
-
                                     </td>
 
-                                    <td className="px-6 py-5">
+                                    <td className="px-6 py-4 text-center">
+                                        <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-semibold">
+                                            {student.semester}
+                                        </span>
+                                    </td>
 
+                                    <td className="px-6 py-4 text-slate-600">
                                         {student.email}
-
                                     </td>
 
-                                    <td className="px-6 py-5 text-center">
-
-                                        <StatusBadge
-
-                                            active={student.isActive}
-
-                                        />
-
+                                    <td className="px-6 py-4 text-center">
+                                        <StatusBadge active={student.isActive} />
                                     </td>
 
-                                    <td className="px-6 py-5 text-center">
-
+                                    <td className="px-6 py-4 text-center">
                                         <Link
-
                                             to={`/students/${student._id}`}
-
-                                            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-
+                                            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition"
                                         >
-
                                             <FaEye />
-
                                             View
-
                                         </Link>
-
                                     </td>
 
                                     <RoleGuard roles={["admin"]}>
-
-                                        <td className="px-6 py-5 text-center">
-
+                                        <td className="px-6 py-4 text-center">
                                             <ActionButtons
-
                                                 onEdit={() => onEdit(student)}
-
                                                 onDelete={() => onDelete(student)}
-
                                             />
-
                                         </td>
-
                                     </RoleGuard>
 
                                 </tr>
-
                             ))
-
                         }
 
                     </tbody>
@@ -244,6 +168,14 @@ const StudentTable = ({ students, onEdit, onDelete }) => {
                 </table>
 
             </div>
+
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+                total={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+            />
 
         </div>
 

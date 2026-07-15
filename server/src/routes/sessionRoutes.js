@@ -49,4 +49,11 @@ router.patch(
     controller.completeSession
 );
 
+router.patch(
+    "/:id/reopen",
+    protect,
+    authorize("admin"),
+    controller.reopenSession
+);
+
 module.exports = router;

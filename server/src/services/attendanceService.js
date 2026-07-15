@@ -1,4 +1,6 @@
 const Attendance = require("../models/Attendance");
+const AttendanceSession = require("../models/AttendanceSession");
+const enrollmentService = require("./enrollmentService");
 
 const { getIO } = require("../socket/socket");
 
@@ -8,7 +10,45 @@ const { getIO } = require("../socket/socket");
 
 const markAttendance = async (data) => {
 
-    const alreadyMarked = await Attendance.findOne({
+    const session = await AttendanceSession.findById(data.session);
+
+    if (!session) {
+        throw new Error("Session not found.");
+    }
+
+    if (session.status === "ENDED") {
+        throw new Error(
+            "This session has ended. Ask an admin to reopen it before " +
+            "making changes."
+        );
+    }
+
+    // A student can only be marked present in a session if they're
+    // actually enrolled in that session's subject. Without this check,
+    // recognition or a manual mark could attach attendance to a
+    // student who was never expected in the room - which then throws
+    // off expectedStudents/presentStudents/absentStudents everywhere
+    // downstream (reports, analytics, dashboard).
+    const enrolledStudentIds = await enrollmentService.getEnrolledStudentIds(
+        session.subject
+    );
+
+    if (!enrolledStudentIds.includes(data.student.toString())) {
+        throw new Error(
+            "This student is not enrolled in this session's subject."
+        );
+    }
+
+    // One attendance record per (student, session) - this is also
+    // enforced as a unique index at the DB level. Instead of treating
+    // a second mark as an error, treat it as a correction: update the
+    // existing record's status/markedAt. This is what makes
+    // "reopen a session and fix an entry" actually work - without
+    // this, reopening a locked session and trying to mark anyone
+    // (manually or via recognition) would immediately fail with
+    // "Attendance already marked" since the row from before ending
+    // the session is still there.
+    const existing = await Attendance.findOne({
 
         student: data.student,
 
@@ -16,13 +56,34 @@ const markAttendance = async (data) => {
 
     });
 
-    if (alreadyMarked) {
+    let attendance;
+    let wasUpdated = false;
 
-        throw new Error("Attendance already marked.");
+    if (existing) {
+
+        // Nothing to do if the status isn't actually changing -
+        // avoids a pointless write and a misleading "updated" event
+        // every time the same face is re-recognized mid-session.
+        if (existing.status === (data.status || "Present")) {
+
+            attendance = existing;
+
+        } else {
+
+            existing.status = data.status || "Present";
+            existing.markedAt = Date.now();
+
+            attendance = await existing.save();
+
+            wasUpdated = true;
+
+        }
+
+    } else {
+
+        attendance = await Attendance.create(data);
 
     }
-
-    const attendance = await Attendance.create(data);
 
     const populatedAttendance = await Attendance.findById(
 
@@ -94,9 +155,15 @@ const markAttendance = async (data) => {
 // Get Attendance
 // ======================================================
 
-const getAttendance = async () => {
+const getAttendance = async (filters = {}) => {
 
-    return await Attendance.find()
+    const query = {};
+
+    if (filters.session) {
+        query.session = filters.session;
+    }
+
+    return await Attendance.find(query)
 
         .populate("student")
 
@@ -110,7 +177,9 @@ const getAttendance = async () => {
 
             }
 
-        });
+        })
+
+        .sort({ markedAt: -1 });
 
 };
 
@@ -119,6 +188,21 @@ const getAttendance = async () => {
 // ======================================================
 
 const deleteAttendance = async (id) => {
+
+    const attendance = await Attendance.findById(id);
+
+    if (!attendance) {
+        throw new Error("Attendance record not found.");
+    }
+
+    const session = await AttendanceSession.findById(attendance.session);
+
+    if (session && session.status === "ENDED") {
+        throw new Error(
+            "This session has ended. Ask an admin to reopen it before " +
+            "making changes."
+        );
+    }
 
     return await Attendance.findByIdAndDelete(id);
 

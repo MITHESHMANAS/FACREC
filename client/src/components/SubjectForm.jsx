@@ -1,5 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { FaHashtag, FaBook, FaChalkboardTeacher } from "react-icons/fa";
+
+import FormInput from "./ui/FormInput";
+import FormSelect from "./ui/FormSelect";
+import Button from "./ui/Button";
 
 const SubjectForm = ({
     onSubmit,
@@ -17,11 +22,8 @@ const SubjectForm = ({
     useEffect(() => {
 
         if (initialData) {
-
             reset(initialData);
-
         } else {
-
             reset({
                 code: "",
                 name: "",
@@ -29,147 +31,85 @@ const SubjectForm = ({
                 branch: "CSE",
                 faculty: ""
             });
-
         }
 
     }, [initialData, reset]);
 
     return (
 
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
             <div>
 
-                <label>Subject Code</label>
-
-                <input
-                    {...register("code", {
-                        required: "Subject Code is required"
-                    })}
-                    className="w-full border rounded-lg p-3"
-                />
-
-                <p className="text-red-500 text-sm">
-
-                    {errors.code?.message}
-
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Subject Details
                 </p>
 
+                <div className="space-y-4">
+
+                    <FormInput
+                        label="Subject Code"
+                        icon={FaHashtag}
+                        placeholder="e.g. CS501"
+                        error={errors.code?.message}
+                        {...register("code", { required: "Subject Code is required" })}
+                    />
+
+                    <FormInput
+                        label="Subject Name"
+                        icon={FaBook}
+                        placeholder="e.g. Distributed Systems"
+                        error={errors.name?.message}
+                        {...register("name", { required: "Subject Name is required" })}
+                    />
+
+                </div>
+
             </div>
 
-            <div>
+            <div className="pt-5 border-t border-slate-100">
 
-                <label>Subject Name</label>
-
-                <input
-                    {...register("name", {
-                        required: "Subject Name is required"
-                    })}
-                    className="w-full border rounded-lg p-3"
-                />
-
-                <p className="text-red-500 text-sm">
-
-                    {errors.name?.message}
-
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Academic Assignment
                 </p>
 
-            </div>
+                <div className="space-y-4">
 
-            <div>
+                    <div className="grid grid-cols-2 gap-4">
 
-                <label>Semester</label>
+                        <FormSelect label="Semester" {...register("semester")}>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                                <option key={sem} value={sem}>{sem}</option>
+                            ))}
+                        </FormSelect>
 
-                <select
-                    {...register("semester")}
-                    className="w-full border rounded-lg p-3"
-                >
+                        <FormSelect label="Branch" {...register("branch")}>
+                            <option>CSE</option>
+                            <option>ECE</option>
+                            <option>ME</option>
+                            <option>CE</option>
+                        </FormSelect>
 
-                    {[1,2,3,4,5,6,7,8].map((sem)=>(
+                    </div>
 
-                        <option
-                            key={sem}
-                            value={sem}
-                        >
+                    <FormInput
+                        label="Faculty"
+                        icon={FaChalkboardTeacher}
+                        placeholder="Assigned faculty name"
+                        {...register("faculty")}
+                    />
 
-                            {sem}
-
-                        </option>
-
-                    ))}
-
-                </select>
-
-            </div>
-
-            <div>
-
-                <label>Branch</label>
-
-                <select
-                    {...register("branch")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    <option>CSE</option>
-                    <option>ECE</option>
-                    <option>ME</option>
-                    <option>CE</option>
-
-                </select>
+                </div>
 
             </div>
 
-            <div>
-
-                <label>Faculty</label>
-
-                <input
-                    {...register("faculty")}
-                    className="w-full border rounded-lg p-3"
-                />
-
-            </div>
-
-            <button
-                disabled={loading}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg"
-            >
-
+            <Button type="submit" loading={loading} className="w-full" size="lg">
                 {
-
                     loading
-
-                        ?
-
-                        initialData
-
-                            ?
-
-                            "Updating..."
-
-                            :
-
-                            "Adding..."
-
-                        :
-
-                        initialData
-
-                            ?
-
-                            "Update Subject"
-
-                            :
-
-                            "Add Subject"
-
+                        ? (initialData ? "Updating..." : "Adding...")
+                        : (initialData ? "Update Subject" : "Add Subject")
                 }
-
-            </button>
+            </Button>
 
         </form>
 

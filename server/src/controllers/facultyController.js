@@ -92,9 +92,35 @@ const deleteFaculty = async (req, res) => {
 
 };
 
+const linkUser = async (req, res) => {
+
+    try {
+
+        const faculty = await facultyService.linkUser(
+            req.params.id,
+            req.body.userId
+        );
+
+        res.json({
+            success: true,
+            faculty
+        });
+
+    } catch (err) {
+
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
+
 module.exports = {
     createFaculty,
     getFaculty,
     updateFaculty,
-    deleteFaculty
+    deleteFaculty,
+    linkUser
 };

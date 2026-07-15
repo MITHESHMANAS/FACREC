@@ -1,89 +1,131 @@
 import {
     FaCheckCircle,
+    FaTimesCircle,
     FaClock
 } from "react-icons/fa";
+
+import Badge from "./Badge";
 
 const RecognitionTimeline = ({ history }) => {
 
     return (
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-lg font-semibold text-slate-800 mb-6">
 
                 Recognition Timeline
 
             </h2>
 
-            <div className="space-y-5">
+            {
 
-                {
+                history.length === 0 ? (
 
-                    history.map((record) => (
+                    <p className="text-center text-gray-400 py-10">
+                        No recognition activity yet.
+                    </p>
 
-                        <div
+                ) : (
 
-                            key={record._id}
+                <div className="space-y-5">
 
-                            className="flex items-start gap-4"
+                    {
 
-                        >
+                        history.map((record) => {
 
-                            <div>
+                            const isPresent = record.status === "Present";
 
-                                <FaCheckCircle
+                            return (
 
-                                    className="text-green-600 text-xl mt-1"
+                                <div
 
-                                />
+                                    key={record._id}
 
-                            </div>
+                                    className="flex items-start gap-4"
 
-                            <div className="flex-1 border-l-2 border-green-500 pl-5">
+                                >
 
-                                <h3 className="font-semibold">
+                                    <div>
 
-                                    {record.session?.subject?.name}
+                                        {
 
-                                </h3>
+                                            isPresent ? (
 
-                                <p className="text-gray-500">
+                                                <FaCheckCircle
+                                                    className="text-emerald-600 text-xl mt-1"
+                                                />
 
-                                    {record.session?.date}
+                                            ) : (
 
-                                </p>
+                                                <FaTimesCircle
+                                                    className="text-red-500 text-xl mt-1"
+                                                />
 
-                                <div className="flex items-center gap-2 mt-2">
+                                            )
 
-                                    <FaClock />
+                                        }
 
-                                    {
+                                    </div>
 
-                                        new Date(
+                                    <div
+                                        className={
+                                            `flex-1 border-l-2 pl-5 ` +
+                                            (isPresent
+                                                ? "border-emerald-400"
+                                                : "border-red-300")
+                                        }
+                                    >
 
-                                            record.markedAt
+                                        <h3 className="font-semibold">
 
-                                        ).toLocaleTimeString()
+                                            {record.session?.subject?.name}
 
-                                    }
+                                        </h3>
+
+                                        <p className="text-gray-500">
+
+                                            {record.session?.date}
+
+                                        </p>
+
+                                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+
+                                            <FaClock />
+
+                                            {
+
+                                                new Date(
+
+                                                    record.markedAt
+
+                                                ).toLocaleTimeString()
+
+                                            }
+
+                                        </div>
+
+                                        <div className="mt-3">
+
+                                            <Badge status={record.status} />
+
+                                        </div>
+
+                                    </div>
 
                                 </div>
 
-                                <span className="inline-block mt-3 bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                            );
 
-                                    {record.status}
+                        })
 
-                                </span>
+                    }
 
-                            </div>
+                </div>
 
-                        </div>
+                )
 
-                    ))
-
-                }
-
-            </div>
+            }
 
         </div>
 

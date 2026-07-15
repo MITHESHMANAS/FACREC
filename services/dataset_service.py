@@ -9,7 +9,6 @@ BASE_DIR = os.path.abspath(
     )
 )
 
-# Absolute path to face_dataset
 DATASET_PATH = os.path.join(
     BASE_DIR,
     "face_dataset"
@@ -17,19 +16,20 @@ DATASET_PATH = os.path.join(
 
 
 def ensure_dataset_directory():
-    """Create dataset directory if it doesn't exist."""
     os.makedirs(DATASET_PATH, exist_ok=True)
 
 
-def dataset_exists(name):
-    """Check if a student's dataset exists."""
+def dataset_exists(roll_no):
     return os.path.exists(
-        os.path.join(DATASET_PATH, f"{name}.npy")
+        os.path.join(
+            DATASET_PATH,
+            f"{roll_no}.npy"
+        )
     )
 
 
 def list_registered_students():
-    """Return all registered students having face datasets."""
+
     ensure_dataset_directory()
 
     return sorted([
@@ -39,9 +39,12 @@ def list_registered_students():
     ])
 
 
-def delete_face_dataset(name):
-    """Delete a student's face dataset."""
-    path = os.path.join(DATASET_PATH, f"{name}.npy")
+def delete_face_dataset(roll_no):
+
+    path = os.path.join(
+        DATASET_PATH,
+        f"{roll_no}.npy"
+    )
 
     if os.path.exists(path):
         os.remove(path)
@@ -50,8 +53,10 @@ def delete_face_dataset(name):
     return False
 
 
-def save_face_dataset(name, face_samples):
-    """Save captured face samples."""
+def save_face_dataset(
+    roll_no,
+    face_samples
+):
 
     ensure_dataset_directory()
 
@@ -61,11 +66,17 @@ def save_face_dataset(name, face_samples):
         return False
 
     face_samples = face_samples.reshape(
-        (face_samples.shape[0], -1)
+        (
+            face_samples.shape[0],
+            -1
+        )
     )
 
     np.save(
-        os.path.join(DATASET_PATH, f"{name}.npy"),
+        os.path.join(
+            DATASET_PATH,
+            f"{roll_no}.npy"
+        ),
         face_samples
     )
 
@@ -73,15 +84,13 @@ def save_face_dataset(name, face_samples):
 
 
 def load_face_dataset():
-    """Load all datasets."""
 
     ensure_dataset_directory()
 
-    # Temporary debug (remove after testing)
-
-
     face_data = []
+
     labels = []
+
     names = {}
 
     class_id = 0
@@ -92,16 +101,23 @@ def load_face_dataset():
             continue
 
         data = np.load(
-            os.path.join(DATASET_PATH, file)
+            os.path.join(
+                DATASET_PATH,
+                file
+            )
         )
 
-        names[class_id] = file[:-4]
+        roll_no = file[:-4]
+
+        names[class_id] = roll_no
 
         face_data.append(data)
 
         labels.append(
             np.full(
-                (data.shape[0],),
+                (
+                    data.shape[0],
+                ),
                 class_id
             )
         )
@@ -113,10 +129,15 @@ def load_face_dataset():
 
     face_dataset = np.concatenate(face_data)
 
-    face_labels = np.concatenate(labels).reshape((-1, 1))
+    face_labels = np.concatenate(labels).reshape(
+        (-1, 1)
+    )
 
     trainset = np.concatenate(
-        (face_dataset, face_labels),
+        (
+            face_dataset,
+            face_labels
+        ),
         axis=1
     )
 

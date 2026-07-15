@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BeatLoader } from "react-spinners";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import AppLayout from "../layouts/AppLayout";
 import StudentTable from "../components/StudentTable";
 import SearchBar from "../components/SearchBar";
 import Modal from "../components/Modal";
 import ConfirmModal from "../components/ConfirmModal";
 import StudentForm from "../components/StudentForm";
 import RoleGuard from "../components/RoleGuard";
-import StatsCard from "../components/StatsCard";
+import {
+    FaUserGraduate,
+    FaCheckCircle,
+    FaBuilding,
+    FaLayerGroup,
+    FaSyncAlt
+} from "react-icons/fa";
+import KpiCard from "../components/ui/KpiCard";
 
 import {
     getStudents,
@@ -166,11 +172,13 @@ const Students = () => {
 
     };
 
+    const [statusFilter, setStatusFilter] = useState("all");
+
     const filteredStudents = students.filter((student) => {
 
         const text = search.toLowerCase();
 
-        return (
+        const matchesSearch = (
 
             student.name.toLowerCase().includes(text) ||
 
@@ -180,25 +188,23 @@ const Students = () => {
 
         );
 
+        const matchesStatus =
+            statusFilter === "all" ||
+            (statusFilter === "active" ? student.isActive : !student.isActive);
+
+        return matchesSearch && matchesStatus;
+
     });
 
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
+        <AppLayout>
 
-            <Sidebar />
-
-            <div className="flex-1">
-
-                <Navbar />
-
-                <div className="p-8">
-
-                    <div className="flex justify-between items-center mb-8">
+                    <div className="flex justify-between items-center mb-6">
 
                         <div>
 
-                            <h1 className="text-4xl font-bold">
+                            <h1 className="text-3xl font-semibold tracking-tight">
 
                                 Students
 
@@ -224,7 +230,7 @@ const Students = () => {
 
                                 }}
 
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-[14px] font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150"
 
                             >
 
@@ -236,49 +242,76 @@ const Students = () => {
 
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
 
-                        <StatsCard
+                        <KpiCard
+                            index={0}
                             title="Total Students"
                             value={students.length}
-                            color="text-indigo-600"
+                            icon={FaUserGraduate}
+                            tone="indigo"
                         />
 
-                        <StatsCard
-                            title="Active"
+                        <KpiCard
+                            index={1}
+                            title="Active Students"
                             value={students.filter(s => s.isActive).length}
-                            color="text-green-600"
+                            icon={FaCheckCircle}
+                            tone="emerald"
                         />
 
-                        <StatsCard
-                            title="CSE"
-                            value={students.filter(s => s.branch === "CSE").length}
-                            color="text-blue-600"
+                        <KpiCard
+                            index={2}
+                            title="Branches"
+                            value={new Set(students.map(s => s.branch).filter(Boolean)).size}
+                            icon={FaBuilding}
+                            tone="slate"
                         />
 
-                        <StatsCard
-                            title="ECE"
-                            value={students.filter(s => s.branch === "ECE").length}
-                            color="text-orange-600"
-                        />
-
-                        <StatsCard
-                            title="ME"
-                            value={students.filter(s => s.branch === "ME").length}
-                            color="text-red-600"
+                        <KpiCard
+                            index={3}
+                            title="Semesters"
+                            value={new Set(students.map(s => s.semester).filter(Boolean)).size}
+                            icon={FaLayerGroup}
+                            tone="amber"
                         />
 
                     </div>
 
-                    <div className="mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 
-                        <SearchBar
+                        <div className="flex flex-wrap items-center gap-3">
 
-                            value={search}
+                            <SearchBar
 
-                            onChange={(e) => setSearch(e.target.value)}
+                                value={search}
 
-                        />
+                                onChange={(e) => setSearch(e.target.value)}
+
+                            />
+
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="border border-slate-300 bg-white rounded-[14px] text-sm px-3.5 py-2.5 text-slate-600 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setLoading(true);
+                                loadStudents();
+                            }}
+                            className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-[14px] text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <FaSyncAlt className={loading ? "animate-spin" : ""} />
+                            Refresh
+                        </button>
 
                     </div>
 
@@ -286,11 +319,7 @@ const Students = () => {
 
                         loading ?
 
-                            <div className="flex justify-center py-20">
-
-                                <BeatLoader color="#4f46e5" />
-
-                            </div>
+                            <TableSkeleton rows={6} columns={8} />
 
                             :
 
@@ -306,9 +335,7 @@ const Students = () => {
 
                     }
 
-                </div>
 
-            </div>
 
             <Modal
 
@@ -364,7 +391,7 @@ const Students = () => {
 
             />
 
-        </div>
+        </AppLayout>
 
     );
 

@@ -5,177 +5,58 @@ import {
 
 import "react-circular-progressbar/dist/styles.css";
 
-import {
-    FaClipboardCheck,
-    FaChartLine,
-    FaAward
-} from "react-icons/fa";
+import { getTier, getTierHex } from "../utils/attendanceTier";
+import Card from "./ui/Card";
 
 const AttendanceProgress = ({ attendance }) => {
 
     const percentage = attendance?.percentage || 0;
-
-    let color = "#ef4444";
-    let status = "Needs Improvement";
-    let message = "Attendance is below the required threshold.";
-
-    if (percentage >= 90) {
-
-        color = "#22c55e";
-
-        status = "Excellent";
-
-        message =
-            "Outstanding attendance record. Keep it up!";
-
-    }
-
-    else if (percentage >= 75) {
-
-        color = "#f59e0b";
-
-        status = "Good";
-
-        message =
-            "Attendance is satisfactory. Aim for 90%+.";
-
-    }
+    const tier = getTier(percentage);
+    const hex = getTierHex(percentage);
 
     return (
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <Card className="h-full flex flex-col items-center justify-center text-center">
 
-            <h2 className="text-2xl font-bold mb-8">
+            <div className="w-32 h-32">
 
-                Attendance Progress
+                <CircularProgressbar
 
-            </h2>
+                    value={percentage}
 
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
+                    text={`${percentage}%`}
 
-                <div className="w-56 h-56 mx-auto">
+                    strokeWidth={8}
 
-                    <CircularProgressbar
+                    styles={buildStyles({
 
-                        value={percentage}
+                        textColor: hex,
 
-                        text={`${percentage}%`}
+                        pathColor: hex,
 
-                        styles={buildStyles({
+                        trailColor: "#e2e8f0",
 
-                            textColor: color,
+                        textSize: "20px"
 
-                            pathColor: color,
+                    })}
 
-                            trailColor: "#e5e7eb",
-
-                            textSize: "16px"
-
-                        })}
-
-                    />
-
-                </div>
-
-                <div>
-
-                    <div className="flex items-center gap-3 mb-5">
-
-                        <FaAward
-                            className="text-3xl"
-                            style={{ color }}
-                        />
-
-                        <div>
-
-                            <h2
-                                className="text-2xl font-bold"
-                                style={{ color }}
-                            >
-
-                                {status}
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                {message}
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="space-y-4">
-
-                        <div className="flex justify-between bg-slate-100 rounded-xl p-4">
-
-                            <div className="flex gap-3 items-center">
-
-                                <FaClipboardCheck className="text-green-600"/>
-
-                                <span>
-
-                                    Present
-
-                                </span>
-
-                            </div>
-
-                            <strong>
-
-                                {attendance.present}
-
-                            </strong>
-
-                        </div>
-
-                        <div className="flex justify-between bg-slate-100 rounded-xl p-4">
-
-                            <div className="flex gap-3 items-center">
-
-                                <FaChartLine className="text-red-500"/>
-
-                                <span>
-
-                                    Absent
-
-                                </span>
-
-                            </div>
-
-                            <strong>
-
-                                {attendance.absent}
-
-                            </strong>
-
-                        </div>
-
-                        <div className="flex justify-between bg-slate-100 rounded-xl p-4">
-
-                            <span>
-
-                                Total Classes
-
-                            </span>
-
-                            <strong>
-
-                                {attendance.total}
-
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-                </div>
+                />
 
             </div>
 
-        </div>
+            <p className="mt-4 text-sm font-medium text-gray-500">
+
+                Overall Attendance
+
+            </p>
+
+            <p className={`text-sm font-semibold ${tier.text}`}>
+
+                {tier.title}
+
+            </p>
+
+        </Card>
 
     );
 

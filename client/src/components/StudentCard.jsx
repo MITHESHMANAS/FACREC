@@ -20,7 +20,7 @@ const StudentCard = ({
 
     return (
 
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition duration-300 overflow-hidden">
+        <div className="bg-white rounded-[20px] shadow-sm border border-slate-200 hover:shadow-md transition duration-300 overflow-hidden">
 
             <div className="bg-gradient-to-r from-indigo-600 to-blue-500 h-20 relative">
 
@@ -86,7 +86,7 @@ const StudentCard = ({
 
                         to={`/students/${student._id}`}
 
-                        className="bg-blue-600 text-white rounded-lg py-2 flex justify-center"
+                        className="bg-indigo-600 text-white rounded-lg py-2 flex justify-center"
 
                     >
 
@@ -96,7 +96,7 @@ const StudentCard = ({
 
                     <button
 
-                        className="bg-yellow-500 text-white rounded-lg py-2"
+                        className="bg-amber-500 text-white rounded-lg py-2"
 
                     >
 

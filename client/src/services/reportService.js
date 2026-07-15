@@ -1,11 +1,12 @@
 import api from "./api";
 
-export const downloadPdfReport = async () => {
+export const downloadPdfReport = async (sessionId = null) => {
 
     const response = await api.get(
         "/reports/pdf",
         {
-            responseType: "blob"
+            responseType: "blob",
+            params: sessionId ? { sessionId } : {}
         }
     );
 
@@ -33,12 +34,13 @@ export const downloadPdfReport = async () => {
 
 };
 
-export const downloadExcelReport = async () => {
+export const downloadExcelReport = async (sessionId = null) => {
 
     const response = await api.get(
         "/reports/excel",
         {
-            responseType: "blob"
+            responseType: "blob",
+            params: sessionId ? { sessionId } : {}
         }
     );
 

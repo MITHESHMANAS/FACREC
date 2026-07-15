@@ -29,6 +29,16 @@ const facultySchema = new mongoose.Schema(
         default:"Assistant Professor"
     },
 
+    // Optional link to the login account (User) this faculty member
+    // uses. Nullable for backward compatibility with faculty records
+    // created before login-linking existed - existing rows keep working,
+    // linking just unlocks subject-assignment enforcement for that account.
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+    },
+
     isActive:{
         type:Boolean,
         default:true

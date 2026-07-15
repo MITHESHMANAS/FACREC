@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
+import useAttendanceSocket from "../hooks/useAttendanceSocket";
 import toast from "react-hot-toast";
-import { BeatLoader } from "react-spinners";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import AppLayout from "../layouts/AppLayout";
 import SearchBar from "../components/SearchBar";
 import Modal from "../components/Modal";
 import ConfirmModal from "../components/ConfirmModal";
 import RoleGuard from "../components/RoleGuard";
-import StatsCard from "../components/StatsCard";
+import {
+    FaCalendarAlt,
+    FaPlay,
+    FaFlagCheckered,
+    FaClock,
+    FaSyncAlt
+} from "react-icons/fa";
+import KpiCard from "../components/ui/KpiCard";
 import SessionTable from "../components/SessionTable";
 import SessionForm from "../components/SessionForm";
+
+import { useAuth } from "../context/AuthContext";
 
 import {
     getSessions,
@@ -18,10 +27,14 @@ import {
     updateSession,
     deleteSession,
     startSession,
-    completeSession
+    completeSession,
+    reopenSession
 } from "../services/sessionService";
+import { getMySubjects } from "../services/facultySubjectService";
 
 const Sessions = () => {
+
+    const { user } = useAuth();
 
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -35,6 +48,34 @@ const Sessions = () => {
 
     const [deleteSessionData, setDeleteSessionData] = useState(null);
 
+    // For faculty accounts, restrict the sessions list to the subjects
+    // they're actually assigned to - "My Subjects" instead of every
+    // session in the system.
+    const [mySubjectIds, setMySubjectIds] = useState(null);
+
+    const loadMySubjects = async () => {
+
+        if (user?.role !== "faculty") {
+            return;
+        }
+
+        try {
+
+            const data = await getMySubjects();
+            setMySubjectIds(
+                data.subjects.map((s) => s._id)
+            );
+
+        } catch {
+
+            // No linked faculty profile yet, or no assignments -
+            // fall back to an empty list rather than showing everything.
+            setMySubjectIds([]);
+
+        }
+
+    };
+
     const loadSessions = async () => {
 
         try {
@@ -45,7 +86,7 @@ const Sessions = () => {
 
         }
 
-        catch (err) {
+        catch {
 
             toast.error("Failed to load sessions");
 
@@ -62,8 +103,18 @@ const Sessions = () => {
     useEffect(() => {
 
         loadSessions();
+        loadMySubjects();
 
-    }, []);
+        }, [user]);
+
+    // Another tab/faculty member ending, reopening, or starting a
+    // session should be reflected here too, not just in the tab that
+    // triggered it.
+    useAttendanceSocket(null, () => {
+
+        loadSessions();
+
+    });
 
     const handleStart = async (session) => {
 
@@ -105,6 +156,29 @@ const Sessions = () => {
             toast.error(
                 err.response?.data?.message ||
                 "Unable to end session"
+            );
+
+        }
+
+    };
+
+    const handleReopen = async (session) => {
+
+        try {
+
+            await reopenSession(session._id);
+
+            toast.success("Session Reopened");
+
+            loadSessions();
+
+        }
+
+        catch (err) {
+
+            toast.error(
+                err.response?.data?.message ||
+                "Unable to reopen session"
             );
 
         }
@@ -218,7 +292,14 @@ const Sessions = () => {
 
     };
 
-    const filteredSessions = sessions.filter((session) => {
+    const scopedSessions =
+        user?.role === "faculty" && mySubjectIds
+            ? sessions.filter((s) =>
+                mySubjectIds.includes(s.subject?._id)
+            )
+            : sessions;
+
+    const filteredSessions = scopedSessions.filter((session) => {
 
         const text = search.toLowerCase();
 
@@ -240,19 +321,11 @@ const Sessions = () => {
 
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
-
-            <Sidebar />
-
-            <div className="flex-1">
-
-                <Navbar />
-
-                <div className="p-8">
+        <AppLayout>
 
                     <div className="flex justify-between items-center mb-6">
 
-                        <h1 className="text-3xl font-bold">
+                        <h1 className="text-3xl font-semibold tracking-tight">
 
                             Sessions
 
@@ -268,7 +341,7 @@ const Sessions = () => {
                                     setOpen(true);
 
                                 }}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-[14px] font-semibold text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150"
                             >
 
                                 + Create Session
@@ -279,52 +352,76 @@ const Sessions = () => {
 
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
 
-                        <StatsCard
-                            title="Total"
-                            value={sessions.length}
-                            color="text-indigo-600"
+                        <KpiCard
+                            index={0}
+                            title="Today's Sessions"
+                            value={
+                                scopedSessions.filter(
+                                    s => s.date === new Date().toISOString().split("T")[0]
+                                ).length
+                            }
+                            icon={FaCalendarAlt}
+                            tone="indigo"
                         />
 
-                        <StatsCard
+                        <KpiCard
+                            index={1}
                             title="Active"
                             value={
-                                sessions.filter(
+                                scopedSessions.filter(
                                     s => s.status === "ACTIVE"
                                 ).length
                             }
-                            color="text-green-600"
+                            icon={FaPlay}
+                            tone="emerald"
                         />
 
-                        <StatsCard
-                            title="Ended"
+                        <KpiCard
+                            index={2}
+                            title="Completed"
                             value={
-                                sessions.filter(
+                                scopedSessions.filter(
                                     s => s.status === "ENDED"
                                 ).length
                             }
-                            color="text-orange-600"
+                            icon={FaFlagCheckered}
+                            tone="blue"
                         />
 
-                        <StatsCard
-                            title="Scheduled"
+                        <KpiCard
+                            index={3}
+                            title="Upcoming"
                             value={
-                                sessions.filter(
+                                scopedSessions.filter(
                                     s => s.status === "SCHEDULED"
                                 ).length
                             }
-                            color="text-red-600"
+                            icon={FaClock}
+                            tone="amber"
                         />
 
                     </div>
 
-                    <div className="mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 
                         <SearchBar
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search by subject, faculty or branch..."
                         />
+
+                        <button
+                            onClick={() => {
+                                setLoading(true);
+                                loadSessions();
+                            }}
+                            className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-[14px] text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <FaSyncAlt className={loading ? "animate-spin" : ""} />
+                            Refresh
+                        </button>
 
                     </div>
 
@@ -332,11 +429,7 @@ const Sessions = () => {
 
                         loading ?
 
-                            <div className="flex justify-center py-16">
-
-                                <BeatLoader color="#4f46e5" />
-
-                            </div>
+                            <TableSkeleton rows={5} columns={6} />
 
                             :
 
@@ -346,13 +439,12 @@ const Sessions = () => {
                                 onDelete={handleDelete}
                                 onStart={handleStart}
                                 onComplete={handleComplete}
+                                onReopen={handleReopen}
                             />
 
                     }
 
-                </div>
 
-            </div>
 
             <Modal
                 isOpen={open}
@@ -391,7 +483,7 @@ const Sessions = () => {
                 onConfirm={confirmDelete}
             />
 
-        </div>
+        </AppLayout>
 
     );
 

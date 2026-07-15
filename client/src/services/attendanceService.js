@@ -1,7 +1,10 @@
 import api from "./api";
 
-export const getAttendance = async () => {
-    const { data } = await api.get("/attendance");
+export const getAttendance = async (filters = {}) => {
+    const params = {};
+    if (filters.session) params.session = filters.session;
+
+    const { data } = await api.get("/attendance", { params });
     return data;
 };
 

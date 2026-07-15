@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
 const {
 
@@ -18,6 +19,8 @@ router.get(
 
     protect,
 
+    authorize("admin","faculty","student"),
+
     generatePDF
 
 );
@@ -27,6 +30,8 @@ router.get(
     "/excel",
 
     protect,
+
+    authorize("admin","faculty"),
 
     generateExcel
 

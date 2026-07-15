@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BeatLoader } from "react-spinners";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import AppLayout from "../layouts/AppLayout";
 import FacultyTable from "../components/FacultyTable";
 import FacultyForm from "../components/FacultyForm";
 import SearchBar from "../components/SearchBar";
 import Modal from "../components/Modal";
 import ConfirmModal from "../components/ConfirmModal";
 import RoleGuard from "../components/RoleGuard";
-import StatsCard from "../components/StatsCard";
+import {
+    FaChalkboardTeacher,
+    FaBuilding,
+    FaSyncAlt
+} from "react-icons/fa";
+import KpiCard from "../components/ui/KpiCard";
 
 import {
     getFaculty,
@@ -162,11 +166,13 @@ const Faculty = () => {
 
     };
 
+    const [statusFilter, setStatusFilter] = useState("all");
+
     const filteredFaculty = faculty.filter((f) => {
 
         const text = search.toLowerCase();
 
-        return (
+        const matchesSearch = (
 
             f.name.toLowerCase().includes(text)
 
@@ -180,23 +186,21 @@ const Faculty = () => {
 
         );
 
+        const matchesStatus =
+            statusFilter === "all" ||
+            (statusFilter === "active" ? f.isActive : !f.isActive);
+
+        return matchesSearch && matchesStatus;
+
     });
 
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
-
-            <Sidebar />
-
-            <div className="flex-1">
-
-                <Navbar />
-
-                <div className="p-8">
+        <AppLayout>
 
                     <div className="flex justify-between items-center mb-6">
 
-                        <h1 className="text-3xl font-bold">
+                        <h1 className="text-3xl font-semibold tracking-tight">
 
                             Faculty
 
@@ -212,7 +216,7 @@ const Faculty = () => {
                                     setOpen(true);
 
                                 }}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-[14px] font-semibold text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150"
                             >
 
                                 + Add Faculty
@@ -223,40 +227,58 @@ const Faculty = () => {
 
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
-                        <StatsCard
-                            title="Faculty"
+                        <KpiCard
+                            index={0}
+                            title="Total Faculty"
                             value={faculty.length}
-                            color="text-indigo-600"
+                            icon={FaChalkboardTeacher}
+                            tone="indigo"
                         />
 
-                        <StatsCard
-                            title="CSE"
-                            value={faculty.filter(f => f.department === "CSE").length}
-                            color="text-green-600"
-                        />
-
-                        <StatsCard
-                            title="ECE"
-                            value={faculty.filter(f => f.department === "ECE").length}
-                            color="text-orange-600"
-                        />
-
-                        <StatsCard
-                            title="ME"
-                            value={faculty.filter(f => f.department === "ME").length}
-                            color="text-red-600"
+                        <KpiCard
+                            index={1}
+                            title="Branches"
+                            value={new Set(faculty.map(f => f.department).filter(Boolean)).size}
+                            icon={FaBuilding}
+                            tone="slate"
                         />
 
                     </div>
 
-                    <div className="mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 
-                        <SearchBar
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                        <div className="flex flex-wrap items-center gap-3">
+
+                            <SearchBar
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search by name, email or employee ID..."
+                            />
+
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="border border-slate-300 bg-white rounded-[14px] text-sm px-3.5 py-2.5 text-slate-600 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setLoading(true);
+                                loadFaculty();
+                            }}
+                            className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-[14px] text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <FaSyncAlt className={loading ? "animate-spin" : ""} />
+                            Refresh
+                        </button>
 
                     </div>
 
@@ -266,13 +288,7 @@ const Faculty = () => {
 
                             ?
 
-                            <div className="flex justify-center py-16">
-
-                                <BeatLoader
-                                    color="#4f46e5"
-                                />
-
-                            </div>
+                            <TableSkeleton rows={5} columns={7} />
 
                             :
 
@@ -284,9 +300,7 @@ const Faculty = () => {
 
                     }
 
-                </div>
 
-            </div>
 
             <Modal
                 isOpen={open}
@@ -321,7 +335,7 @@ const Faculty = () => {
                 onConfirm={confirmDelete}
             />
 
-        </div>
+        </AppLayout>
 
     );
 

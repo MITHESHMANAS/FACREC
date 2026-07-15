@@ -26,6 +26,30 @@ const startRecognition = () => {
             [pythonScript]
         );
 
+        let settled = false;
+
+        // face_recognition.py caps itself at MAX_FRAMES under normal
+        // operation, but a camera that fails to open can block
+        // cv2.VideoCapture/cap.read() indefinitely on some drivers -
+        // in that case the child process never exits and the request
+        // would otherwise hang forever. Kill it and fail loud instead.
+        const timeout = setTimeout(() => {
+
+            if (settled) return;
+
+            settled = true;
+
+            python.kill("SIGKILL");
+
+            reject(
+                new Error(
+                    "Recognition timed out after 45 seconds. Check " +
+                    "the camera connection and try again."
+                )
+            );
+
+        }, 45000);
+
         let output = "";
         let errorOutput = "";
 
@@ -43,11 +67,21 @@ const startRecognition = () => {
 
         python.on("error", (err) => {
 
+            if (settled) return;
+            settled = true;
+
+            clearTimeout(timeout);
+
             reject(err);
 
         });
 
         python.on("close", (code) => {
+
+            if (settled) return;
+            settled = true;
+
+            clearTimeout(timeout);
 
             if (code !== 0) {
 

@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
 const {
 
@@ -15,6 +16,8 @@ router.get(
     "/:id",
 
     protect,
+
+    authorize("admin","faculty","student"),
 
     getStudentProfile
 

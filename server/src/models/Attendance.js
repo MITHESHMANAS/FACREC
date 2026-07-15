@@ -30,6 +30,15 @@ const attendanceSchema = new mongoose.Schema(
     timestamps:true
 });
 
+// Belt-and-braces duplicate prevention: markAttendance already checks
+// for an existing record before creating one, but that check-then-create
+// has a race window under concurrent requests. This unique index makes
+// duplicates impossible at the database level regardless of app logic.
+attendanceSchema.index(
+    { student: 1, session: 1 },
+    { unique: true }
+);
+
 module.exports=mongoose.model(
     "Attendance",
     attendanceSchema

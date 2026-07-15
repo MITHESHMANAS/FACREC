@@ -7,10 +7,12 @@ const analyticsController = require(
 );
 
 const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
 router.get(
     "/",
     protect,
+    authorize("admin"),
     analyticsController.getAnalytics
 );
 

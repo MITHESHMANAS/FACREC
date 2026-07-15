@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { BeatLoader } from "react-spinners";
+import CardSkeleton from "../components/ui/CardSkeleton";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import AppLayout from "../layouts/AppLayout";
+
+import {
+    FaClipboardList,
+    FaCheckCircle,
+    FaTimesCircle,
+    FaPercentage
+} from "react-icons/fa";
 
 import ProfileHeader from "../components/ProfileHeader";
+import KpiCard from "../components/ui/KpiCard";
 import AttendanceProgress from "../components/AttendanceProgress";
 import AttendanceHealth from "../components/AttendanceHealth";
 import SubjectPerformance from "../components/SubjectPerformance";
+import EnrolledSubjects from "../components/EnrolledSubjects";
 import AttendanceHistory from "../components/AttendanceHistory";
 import RecognitionTimeline from "../components/RecognitionTimeline";
 
@@ -62,11 +70,13 @@ const StudentProfile = () => {
 
         return (
 
-            <div className="flex justify-center items-center h-screen">
+            <AppLayout>
 
-                <BeatLoader color="#4f46e5" />
+                <div className="rounded-[20px] bg-slate-200 animate-pulse h-40 mb-6" />
 
-            </div>
+                <CardSkeleton cards={3} />
+
+            </AppLayout>
 
         );
 
@@ -88,38 +98,49 @@ const StudentProfile = () => {
 
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
-
-            <Sidebar />
-
-            <div className="flex-1">
-
-                <Navbar />
-
-                <div className="p-8">
-
-                    <div className="mb-8">
-
-                        <h1 className="text-4xl font-bold">
-
-                            Student Profile
-
-                        </h1>
-
-                        <p className="text-gray-500 mt-2">
-
-                            Attendance analytics and recognition insights.
-
-                        </p>
-
-                    </div>
+        <AppLayout>
 
                     <ProfileHeader
                         student={profile.student}
-                        attendance={profile.attendance}
                     />
 
-                    <div className="grid lg:grid-cols-2 gap-6 mt-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+
+                        <KpiCard
+                            index={0}
+                            title="Total Classes"
+                            value={profile.attendance.total}
+                            icon={FaClipboardList}
+                            tone="indigo"
+                        />
+
+                        <KpiCard
+                            index={1}
+                            title="Present"
+                            value={profile.attendance.present}
+                            icon={FaCheckCircle}
+                            tone="emerald"
+                        />
+
+                        <KpiCard
+                            index={2}
+                            title="Absent"
+                            value={profile.attendance.absent}
+                            icon={FaTimesCircle}
+                            tone="red"
+                        />
+
+                        <KpiCard
+                            index={3}
+                            title="Attendance %"
+                            value={`${profile.attendance.percentage}%`}
+                            icon={FaPercentage}
+                            tone="amber"
+                        />
+
+                    </div>
+
+                    <div className="grid lg:grid-cols-2 gap-6 mt-6">
 
                         <AttendanceProgress
                             attendance={profile.attendance}
@@ -131,7 +152,15 @@ const StudentProfile = () => {
 
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-6">
+
+                        <EnrolledSubjects
+                            subjects={profile.enrolledSubjects}
+                        />
+
+                    </div>
+
+                    <div className="mt-6">
 
                         <SubjectPerformance
                             subjects={profile.subjects}
@@ -139,7 +168,7 @@ const StudentProfile = () => {
 
                     </div>
 
-                    <div className="grid xl:grid-cols-2 gap-6 mt-8">
+                    <div className="grid xl:grid-cols-2 gap-6 mt-6">
 
                         <AttendanceHistory
                             history={profile.history}
@@ -151,11 +180,9 @@ const StudentProfile = () => {
 
                     </div>
 
-                </div>
 
-            </div>
 
-        </div>
+        </AppLayout>
 
     );
 

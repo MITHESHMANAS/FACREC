@@ -11,9 +11,11 @@ import Analytics from "../pages/Analytics";
 import Reports from "../pages/Reports";
 import StudentProfile from "../pages/StudentProfile";
 import Recognition from "../pages/Recognition";
+import FacultyAssignments from "../pages/FacultyAssignments";
+import Enrollments from "../pages/Enrollments";
 
 import ProtectedRoute from "../components/ProtectedRoute";
-
+import RecognitionHistory from "../pages/RecognitionHistory";
 const AppRoutes = () => {
 
     return (
@@ -82,6 +84,28 @@ const AppRoutes = () => {
                     }
                 />
 
+                {/* Enrollments (admin only) */}
+
+                <Route
+                    path="/enrollments"
+                    element={
+                        <ProtectedRoute roles={["admin"]}>
+                            <Enrollments />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Faculty Subject Assignments (admin only) */}
+
+                <Route
+                    path="/faculty-assignments"
+                    element={
+                        <ProtectedRoute roles={["admin"]}>
+                            <FacultyAssignments />
+                        </ProtectedRoute>
+                    }
+                />
+
                 {/* Sessions */}
 
                 <Route
@@ -136,6 +160,16 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+    path="/recognition-history"
+    element={
+        <ProtectedRoute
+            roles={["admin","faculty"]}
+        >
+            <RecognitionHistory />
+        </ProtectedRoute>
+    }
+/>
 
             </Routes>
 

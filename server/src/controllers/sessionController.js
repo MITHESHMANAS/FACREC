@@ -4,7 +4,10 @@ const createSession = async (req, res) => {
 
     try {
 
-        const session = await sessionService.createSession(req.body);
+        const session = await sessionService.createSession(
+            req.body,
+            req.user
+        );
 
         res.status(201).json({
             success: true,
@@ -49,7 +52,10 @@ const startSession = async (req, res) => {
 
     try {
 
-        const session = await sessionService.startSession(req.params.id);
+        const session = await sessionService.startSession(
+            req.params.id,
+            req.user
+        );
 
         res.json({
             success: true,
@@ -135,6 +141,28 @@ const deleteSession = async (req, res) => {
 
 };
 
+const reopenSession = async (req, res) => {
+
+    try {
+
+        const session = await sessionService.reopenSession(req.params.id);
+
+        res.json({
+            success: true,
+            session
+        });
+
+    } catch (err) {
+
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
+
 
 module.exports = {
     createSession,
@@ -142,5 +170,6 @@ module.exports = {
     updateSession,
     deleteSession,
     startSession,
-    completeSession
+    completeSession,
+    reopenSession
 };

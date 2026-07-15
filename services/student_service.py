@@ -42,8 +42,33 @@ def get_student(name):
         "semester": row[4],
         "email": row[5],
     }
+def get_student_by_roll_no(roll_no):
+    """Fetch a student using roll number."""
 
+    conn = get_connection()
+    cursor = conn.cursor()
 
+    cursor.execute("""
+        SELECT id, name, roll_no, branch, semester, email
+        FROM students
+        WHERE roll_no = ?
+    """, (roll_no,))
+
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "id": row[0],
+        "name": row[1],
+        "roll_no": row[2],
+        "branch": row[3],
+        "semester": row[4],
+        "email": row[5]
+    }
 def get_all_students():
     """Fetch all students. Returns a list of dicts."""
     conn = get_connection()
@@ -110,3 +135,49 @@ def get_student_count():
     conn.close()
 
     return count
+def get_student_by_roll_no(roll_no):
+    """Fetch student by roll number."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, name, roll_no, branch, semester, email
+        FROM students
+        WHERE roll_no = ?
+    """, (roll_no,))
+
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "id": row[0],
+        "name": row[1],
+        "roll_no": row[2],
+        "branch": row[3],
+        "semester": row[4],
+        "email": row[5],
+    }
+
+
+def delete_student_by_roll_no(roll_no):
+    """Delete student by roll number."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM students
+        WHERE roll_no = ?
+    """, (roll_no,))
+
+    deleted = cursor.rowcount
+
+    conn.commit()
+    conn.close()
+
+    return deleted > 0

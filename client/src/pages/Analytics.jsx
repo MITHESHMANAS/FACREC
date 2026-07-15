@@ -1,17 +1,40 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BeatLoader } from "react-spinners";
+import CardSkeleton from "../components/ui/CardSkeleton";
+import {
+    FaUserGraduate,
+    FaClipboardCheck,
+    FaChartLine,
+    FaDatabase,
+    FaMicrochip
+} from "react-icons/fa";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
-import StatsCard from "../components/StatsCard";
+import AppLayout from "../layouts/AppLayout";
+import KpiCard from "../components/ui/KpiCard";
+import Card from "../components/ui/Card";
 import AnalyticsCharts from "../components/AnalyticsCharts";
 
 import { getAnalytics } from "../services/analyticsService";
+import { getEngineStatus } from "../services/recognitionService";
+
+const StatusDot = ({ ok, label }) => (
+    <span className={`inline-flex items-center gap-1.5 font-semibold ${ok ? "text-emerald-600" : "text-red-500"}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${ok ? "bg-emerald-500" : "bg-red-500"}`} />
+        {label}
+    </span>
+);
+
+const InfoRow = ({ label, children }) => (
+    <div className="flex justify-between items-center py-2">
+        <span className="text-slate-500 text-sm">{label}</span>
+        {children}
+    </div>
+);
 
 const Analytics = () => {
 
     const [analytics, setAnalytics] = useState(null);
+    const [engineStatus, setEngineStatus] = useState(null);
 
     const [loading, setLoading] = useState(true);
 
@@ -19,9 +42,13 @@ const Analytics = () => {
 
         try {
 
-            const data = await getAnalytics();
+            const [analyticsData, statusData] = await Promise.all([
+                getAnalytics(),
+                getEngineStatus().catch(() => null)
+            ]);
 
-            setAnalytics(data);
+            setAnalytics(analyticsData);
+            setEngineStatus(statusData);
 
         }
 
@@ -53,11 +80,16 @@ const Analytics = () => {
 
         return (
 
-            <div className="flex justify-center items-center h-screen">
+            <AppLayout>
 
-                <BeatLoader color="#4F46E5" />
+                <div className="mb-6">
+                    <div className="h-7 w-56 rounded-full bg-slate-200 animate-pulse mb-2" />
+                    <div className="h-4 w-80 rounded-full bg-slate-100 animate-pulse" />
+                </div>
 
-            </div>
+                <CardSkeleton cards={4} />
+
+            </AppLayout>
 
         );
 
@@ -65,281 +97,128 @@ const Analytics = () => {
 
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
-
-            <Sidebar />
-
-            <div className="flex-1">
-
-                <Navbar />
-
-                <div className="p-8">
-
-                    <div className="flex justify-between items-center mb-8">
-
-                        <div>
-
-                            <h1 className="text-4xl font-bold">
-
-                                Analytics Dashboard
-
-                            </h1>
-
-                            <p className="text-gray-500 mt-2">
-
-                                Attendance Analytics & Face Recognition Insights
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-
-                        <StatsCard
-
-                            title="Students"
-
-                            value={analytics.totalStudents}
-
-                            color="text-indigo-600"
-
-                        />
-
-                        <StatsCard
-
-                            title="Sessions"
-
-                            value={analytics.totalSessions}
-
-                            color="text-green-600"
-
-                        />
-
-                        <StatsCard
-
-                            title="Attendance"
-
-                            value={analytics.totalAttendance}
-
-                            color="text-orange-600"
-
-                        />
-
-                        <StatsCard
-
-                            title="Today's Attendance"
-
-                            value={analytics.todayAttendance}
-
-                            color="text-red-600"
-
-                        />
-
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-
-                        <div className="bg-white rounded-xl shadow p-6">
-
-                            <h2 className="text-lg font-bold mb-4">
-
-                                Attendance Overview
-
-                            </h2>
-
-                            <div className="space-y-3">
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Present
-
-                                    </span>
-
-                                    <span className="font-bold text-green-600">
-
-                                        {analytics.present}
-
-                                    </span>
-
-                                </div>
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Absent
-
-                                    </span>
-
-                                    <span className="font-bold text-red-600">
-
-                                        {analytics.absent}
-
-                                    </span>
-
-                                </div>
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Active Sessions
-
-                                    </span>
-
-                                    <span className="font-bold text-indigo-600">
-
-                                        {analytics.activeSessions}
-
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow p-6">
-
-                            <h2 className="text-lg font-bold mb-4">
-
-                                System Status
-
-                            </h2>
-
-                            <div className="space-y-3">
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Camera
-
-                                    </span>
-
-                                    <span className="text-green-600">
-
-                                        ● Online
-
-                                    </span>
-
-                                </div>
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Recognition Engine
-
-                                    </span>
-
-                                    <span className="text-green-600">
-
-                                        ● Running
-
-                                    </span>
-
-                                </div>
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        MongoDB
-
-                                    </span>
-
-                                    <span className="text-green-600">
-
-                                        ● Connected
-
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow p-6">
-
-                            <h2 className="text-lg font-bold mb-4">
-
-                                Recognition Summary
-
-                            </h2>
-
-                            <div className="space-y-3">
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Accuracy
-
-                                    </span>
-
-                                    <span className="font-bold text-green-600">
-
-                                        {analytics.recognitionStats.accuracy}%
-
-                                    </span>
-
-                                </div>
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Avg Confidence
-
-                                    </span>
-
-                                    <span className="font-bold text-indigo-600">
-
-                                        {analytics.recognitionStats.averageConfidence}%
-
-                                    </span>
-
-                                </div>
-
-                                <div className="flex justify-between">
-
-                                    <span>
-
-                                        Unknown Faces
-
-                                    </span>
-
-                                    <span className="font-bold text-red-600">
-
-                                        {analytics.recognitionStats.unknownFaces}
-
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <AnalyticsCharts
-
-                        analytics={analytics}
-
-                    />
-
+        <AppLayout>
+
+            <div className="flex justify-between items-center mb-6">
+
+                <div>
+                    <h1 className="text-3xl font-semibold tracking-tight text-slate-800">
+                        Analytics Dashboard
+                    </h1>
+                    <p className="text-gray-500 mt-2">
+                        Attendance Analytics & Face Recognition Insights
+                    </p>
                 </div>
 
             </div>
 
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+                <KpiCard
+                    index={0}
+                    title="Attendance %"
+                    value={
+                        (analytics.present + analytics.absent) > 0
+                            ? `${Math.round((analytics.present / (analytics.present + analytics.absent)) * 100)}%`
+                            : "—"
+                    }
+                    icon={FaClipboardCheck}
+                    tone="indigo"
+                />
+
+                <KpiCard
+                    index={1}
+                    title="Top Branch"
+                    value={
+                        analytics.branchAttendance.length > 0
+                            ? [...analytics.branchAttendance].sort((a, b) => b.students - a.students)[0]._id
+                            : "—"
+                    }
+                    icon={FaUserGraduate}
+                    tone="emerald"
+                />
+
+                <KpiCard
+                    index={2}
+                    title="Shortage Alerts"
+                    value={analytics.shortageStudents.length}
+                    icon={FaChartLine}
+                    tone="red"
+                />
+
+                <KpiCard
+                    index={3}
+                    title="Recognition Accuracy"
+                    value={`${analytics.recognitionStats.accuracy}%`}
+                    icon={FaMicrochip}
+                    tone="amber"
+                />
+
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+
+                <Card>
+                    <h2 className="text-lg font-bold mb-2 flex items-center gap-2 text-slate-800">
+                        <FaClipboardCheck className="text-indigo-600" />
+                        Attendance Overview
+                    </h2>
+                    <div className="divide-y divide-slate-100">
+                        <InfoRow label="Present">
+                            <span className="font-bold text-emerald-600">{analytics.present}</span>
+                        </InfoRow>
+                        <InfoRow label="Absent">
+                            <span className="font-bold text-red-600">{analytics.absent}</span>
+                        </InfoRow>
+                        <InfoRow label="Active Sessions">
+                            <span className="font-bold text-indigo-600">{analytics.activeSessions}</span>
+                        </InfoRow>
+                    </div>
+                </Card>
+
+                <Card>
+                    <h2 className="text-lg font-bold mb-2 flex items-center gap-2 text-slate-800">
+                        <FaDatabase className="text-indigo-600" />
+                        System Status
+                    </h2>
+                    <div className="divide-y divide-slate-100">
+                        <InfoRow label="MongoDB">
+                            <StatusDot ok={engineStatus?.mongodb === "CONNECTED"} label={engineStatus?.mongodb || "Unknown"} />
+                        </InfoRow>
+                        <InfoRow label="Vision Module">
+                            <StatusDot ok={engineStatus?.visionModule === "READY"} label={engineStatus?.visionModule || "Unknown"} />
+                        </InfoRow>
+                        <InfoRow label="Registered Faces">
+                            <span className="font-bold text-indigo-600">{engineStatus?.registeredFaces ?? "—"}</span>
+                        </InfoRow>
+                    </div>
+                </Card>
+
+                <Card>
+                    <h2 className="text-lg font-bold mb-2 flex items-center gap-2 text-slate-800">
+                        <FaMicrochip className="text-indigo-600" />
+                        Recognition Summary
+                    </h2>
+                    <div className="divide-y divide-slate-100">
+                        <InfoRow label="Accuracy">
+                            <span className="font-bold text-emerald-600">{analytics.recognitionStats.accuracy}%</span>
+                        </InfoRow>
+                        <InfoRow label="Avg Confidence">
+                            <span className="font-bold text-indigo-600">{analytics.recognitionStats.averageConfidence}%</span>
+                        </InfoRow>
+                        <InfoRow label="Unknown Faces">
+                            <span className="font-bold text-red-600">{analytics.recognitionStats.unknownFaces}</span>
+                        </InfoRow>
+                    </div>
+                </Card>
+
+            </div>
+
+            <AnalyticsCharts
+                analytics={analytics}
+            />
+
+        </AppLayout>
 
     );
 

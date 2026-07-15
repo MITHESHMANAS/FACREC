@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import socket from "../socket/socket";
 import toast from "react-hot-toast";
 
-const useAttendanceSocket = (onAttendanceMarked) => {
+const useAttendanceSocket = (onAttendanceMarked, onSessionUpdated) => {
 
     useEffect(() => {
 
@@ -30,6 +30,18 @@ const useAttendanceSocket = (onAttendanceMarked) => {
 
         });
 
+        socket.on("sessionUpdated", (session) => {
+
+            console.log("⚡ Session Updated:", session);
+
+            if (onSessionUpdated) {
+
+                onSessionUpdated(session);
+
+            }
+
+        });
+
         socket.on("disconnect", () => {
 
             console.log("🔴 Socket Disconnected");
@@ -40,13 +52,15 @@ const useAttendanceSocket = (onAttendanceMarked) => {
 
             socket.off("attendanceMarked");
 
+            socket.off("sessionUpdated");
+
             socket.off("connect");
 
             socket.off("disconnect");
 
         };
 
-    }, [onAttendanceMarked]);
+    }, [onAttendanceMarked, onSessionUpdated]);
 
 };
 

@@ -7,7 +7,7 @@ const SubjectTable = ({ subjects, onEdit, onDelete }) => {
     if (subjects.length === 0) {
 
         return (
-            <div className="bg-white rounded-xl shadow p-10 text-center text-gray-500">
+            <div className="card p-10 text-center text-muted-cool">
 
                 📚
 
@@ -15,7 +15,7 @@ const SubjectTable = ({ subjects, onEdit, onDelete }) => {
                     No Subjects Found
                 </p>
 
-                <p className="text-gray-400 mt-2">
+                <p className="text-muted-cool mt-2">
                     Add your first subject.
                 </p>
 
@@ -26,11 +26,11 @@ const SubjectTable = ({ subjects, onEdit, onDelete }) => {
 
     return (
 
-        <div className="overflow-x-auto rounded-xl shadow bg-white">
+        <div className="overflow-x-auto card">
 
             <table className="min-w-full">
 
-                <thead className="bg-indigo-600 text-white">
+                <thead className="bg-brass text-ink">
 
                     <tr>
 
@@ -55,7 +55,7 @@ const SubjectTable = ({ subjects, onEdit, onDelete }) => {
 
                         <tr
                             key={subject._id}
-                            className="border-b hover:bg-slate-50 transition"
+                            className="border-b border-black/5 hover:bg-paper transition"
                         >
 
                             <td className="p-4">

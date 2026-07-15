@@ -1,31 +1,44 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { FaCalendarCheck, FaUserGraduate, FaClipboardCheck } from "react-icons/fa";
 
-import { getStudents } from "../services/studentService";
 import { getSessions } from "../services/sessionService";
+import { getEnrollments } from "../services/enrollmentService";
+import FormSelect from "./ui/FormSelect";
+import Button from "./ui/Button";
 
 const AttendanceForm = ({ onSubmit, loading }) => {
 
     const {
         register,
         handleSubmit,
-        reset
+        reset,
+        watch
     } = useForm();
 
-    const [students, setStudents] = useState([]);
     const [sessions, setSessions] = useState([]);
+    const [enrolledStudents, setEnrolledStudents] = useState([]);
+    const [loadingStudents, setLoadingStudents] = useState(false);
+
+    const selectedSessionId = watch("session");
 
     useEffect(() => {
 
-        const loadData = async () => {
+        const loadSessions = async () => {
 
             try {
 
-                const studentRes = await getStudents();
                 const sessionRes = await getSessions();
 
-                setStudents(studentRes.students);
-                setSessions(sessionRes.sessions);
+                // Only sessions that can actually accept a new
+                // attendance record right now - an ended session will
+                // just be rejected by the backend, so don't offer it
+                // here.
+                const markable = (sessionRes.sessions || []).filter(
+                    (s) => s.status !== "ENDED"
+                );
+
+                setSessions(markable);
 
             }
 
@@ -37,7 +50,7 @@ const AttendanceForm = ({ onSubmit, loading }) => {
 
         };
 
-        loadData();
+        loadSessions();
 
         reset({
             status: "Present"
@@ -45,135 +58,138 @@ const AttendanceForm = ({ onSubmit, loading }) => {
 
     }, [reset]);
 
+    // Every time the selected session changes, load only the students
+    // actually enrolled in that session's subject - marking attendance
+    // for someone who isn't enrolled is rejected server-side anyway,
+    // so don't let the dropdown offer it in the first place.
+    useEffect(() => {
+
+        const loadEnrolledStudents = async () => {
+
+            const session = sessions.find(
+                (s) => s._id === selectedSessionId
+            );
+
+            if (!session || !session.subject?._id) {
+                setEnrolledStudents([]);
+                return;
+            }
+
+            try {
+
+                setLoadingStudents(true);
+
+                const data = await getEnrollments({
+                    subject: session.subject._id
+                });
+
+                const active = (data.enrollments || [])
+                    .filter((e) => e.status === "ACTIVE" && e.student)
+                    .map((e) => e.student);
+
+                setEnrolledStudents(active);
+
+            }
+
+            catch (err) {
+
+                console.log(err);
+
+                setEnrolledStudents([]);
+
+            }
+
+            finally {
+
+                setLoadingStudents(false);
+
+            }
+
+        };
+
+        if (selectedSessionId) {
+            loadEnrolledStudents();
+        } else {
+            setEnrolledStudents([]);
+        }
+
+    }, [selectedSessionId, sessions]);
+
     return (
 
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-            <div>
-
-                <label className="block mb-1 font-medium">
-
-                    Student
-
-                </label>
-
-                <select
-                    {...register("student")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    {
-
-                        students.map((student) => (
-
-                            <option
-                                key={student._id}
-                                value={student._id}
-                            >
-
-                                {student.rollNo} - {student.name}
-
-                            </option>
-
-                        ))
-
-                    }
-
-                </select>
-
-            </div>
-
-            <div>
-
-                <label className="block mb-1 font-medium">
-
-                    Session
-
-                </label>
-
-                <select
-                    {...register("session")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    {
-
-                        sessions.map((session) => (
-
-                            <option
-                                key={session._id}
-                                value={session._id}
-                            >
-
-                                {session.subject?.code}
-                                {" - "}
-                                {session.subject?.name}
-                                {" ("}
-                                {session.date}
-                                {")"}
-
-                            </option>
-
-                        ))
-
-                    }
-
-                </select>
-
-            </div>
-
-            <div>
-
-                <label className="block mb-1 font-medium">
-
-                    Status
-
-                </label>
-
-                <select
-                    {...register("status")}
-                    className="w-full border rounded-lg p-3"
-                >
-
-                    <option value="Present">
-
-                        Present
-
-                    </option>
-
-                    <option value="Absent">
-
-                        Absent
-
-                    </option>
-
-                </select>
-
-            </div>
-
-            <button
-                disabled={loading}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg"
+            <FormSelect
+                label="Session"
+                icon={FaCalendarCheck}
+                {...register("session")}
             >
-
+                <option value="">Select a session</option>
                 {
-
-                    loading
-
-                        ?
-
-                        "Saving..."
-
-                        :
-
-                        "Mark Attendance"
-
+                    sessions.map((session) => (
+                        <option key={session._id} value={session._id}>
+                            {session.subject?.code}
+                            {" - "}
+                            {session.subject?.name}
+                            {" ("}
+                            {session.date}
+                            {", "}
+                            {session.status}
+                            {")"}
+                        </option>
+                    ))
                 }
+            </FormSelect>
 
-            </button>
+            <FormSelect
+                label="Student"
+                icon={FaUserGraduate}
+                disabled={!selectedSessionId || loadingStudents}
+                hint={
+                    selectedSessionId && !loadingStudents && enrolledStudents.length === 0
+                        ? "No students are enrolled in this session's subject yet."
+                        : null
+                }
+                {...register("student")}
+            >
+                <option value="">
+                    {
+                        !selectedSessionId
+                            ? "Select a session first"
+                            : loadingStudents
+                                ? "Loading enrolled students..."
+                                : enrolledStudents.length === 0
+                                    ? "No students enrolled in this subject"
+                                    : "Select a student"
+                    }
+                </option>
+                {
+                    enrolledStudents.map((student) => (
+                        <option key={student._id} value={student._id}>
+                            {student.rollNo} - {student.name}
+                        </option>
+                    ))
+                }
+            </FormSelect>
+
+            <FormSelect
+                label="Status"
+                icon={FaClipboardCheck}
+                {...register("status")}
+            >
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+            </FormSelect>
+
+            <Button
+                type="submit"
+                loading={loading}
+                disabled={!selectedSessionId || enrolledStudents.length === 0}
+                className="w-full mt-2"
+                size="lg"
+            >
+                {loading ? "Saving..." : "Mark Attendance"}
+            </Button>
 
         </form>
 

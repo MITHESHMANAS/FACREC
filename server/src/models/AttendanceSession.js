@@ -42,7 +42,22 @@ status: {
     type: String,
     enum: ["SCHEDULED", "ACTIVE", "ENDED"],
     default: "SCHEDULED"
-}
+},
+
+    expectedStudents: {
+        type: Number,
+        default: 0
+    },
+
+    presentStudents: {
+        type: Number,
+        default: 0
+    },
+
+    absentStudents: {
+        type: Number,
+        default: 0
+    }
 
 },
 {

@@ -1,5 +1,6 @@
 const Student = require("../models/Student");
 const Attendance = require("../models/Attendance");
+const Enrollment = require("../models/Enrollment");
 
 const getStudentProfile = async (id) => {
 
@@ -85,6 +86,20 @@ const getStudentProfile = async (id) => {
         })
     );
 
+    const enrollments = await Enrollment.find({
+        student: id,
+        status: "ACTIVE"
+    }).populate("subject");
+
+    const enrolledSubjects = enrollments
+        .filter((e) => e.subject)
+        .map((e) => ({
+            _id: e.subject._id,
+            code: e.subject.code,
+            name: e.subject.name,
+            credits: e.subject.credits
+        }));
+
     return {
 
         student,
@@ -102,6 +117,8 @@ const getStudentProfile = async (id) => {
         },
 
         subjects,
+
+        enrolledSubjects,
 
         history: attendance
             .sort(

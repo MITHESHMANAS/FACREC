@@ -1,22 +1,42 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     FaCamera,
     FaPlay,
-    FaUserGraduate,
-    FaCheckCircle,
     FaMicrochip,
-    FaClock
+    FaClock,
+    FaCheckCircle,
+    FaTimesCircle,
+    FaVideo,
+    FaUserCheck
 } from "react-icons/fa";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
-import StatsCard from "../components/StatsCard";
+import AppLayout from "../layouts/AppLayout";
+import KpiCard from "../components/ui/KpiCard";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import EmptyState from "../components/ui/EmptyState";
+import RecognitionResultCard from "../components/RecognitionResultCard";
 
 import {
     getEngineStatus,
     startRecognition
 } from "../services/recognitionService";
+import { getRecognitionLogs } from "../services/recognitionLogService";
+
+const isToday = (dateString) => {
+
+    const d = new Date(dateString);
+    const now = new Date();
+
+    return (
+        d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate()
+    );
+
+};
 
 const Recognition = () => {
 
@@ -25,6 +45,8 @@ const Recognition = () => {
     const [loading, setLoading] = useState(false);
 
     const [result, setResult] = useState(null);
+
+    const [todaysLogs, setTodaysLogs] = useState([]);
 
     const loadStatus = async () => {
 
@@ -44,9 +66,28 @@ const Recognition = () => {
 
     };
 
+    const loadTodaysLogs = async () => {
+
+        try {
+
+            const data = await getRecognitionLogs();
+
+            setTodaysLogs((data.logs || []).filter(l => isToday(l.capturedAt)));
+
+        }
+
+        catch {
+
+            setTodaysLogs([]);
+
+        }
+
+    };
+
     useEffect(() => {
 
         loadStatus();
+        loadTodaysLogs();
 
     }, []);
 
@@ -55,6 +96,12 @@ const Recognition = () => {
         try {
 
             setLoading(true);
+
+            // Clear the previous run's results immediately rather than
+            // leaving stale cards on screen while a new scan is in
+            // progress - otherwise a slow scan can look like nothing
+            // happened yet, when actually old data is just still shown.
+            setResult(null);
 
             const data = await startRecognition();
 
@@ -90,345 +137,281 @@ const Recognition = () => {
 
             setLoading(false);
 
+            // The scan itself may have changed the engine's state
+            // (e.g. registered face count if this ties into future
+            // features) - refresh so the status cards don't go stale.
+            loadStatus();
+            loadTodaysLogs();
+
         }
 
     };
 
+    const engineReady = engine?.visionModule === "READY";
+
     return (
 
-        <div className="flex min-h-screen bg-slate-100">
+        <AppLayout>
 
-            <Sidebar />
+            <div className="flex justify-between items-center flex-wrap gap-4">
 
-            <div className="flex-1">
+                <div>
+                    <h1 className="text-3xl font-semibold tracking-tight text-slate-800">
+                        Live Face Recognition
+                    </h1>
+                    <p className="text-gray-500 mt-1">
+                        Camera-based attendance recognition
+                    </p>
+                </div>
 
-                <Navbar />
+                <Button
+                    onClick={handleRecognition}
+                    loading={loading}
+                    size="lg"
+                    icon={<FaPlay />}
+                >
+                    {
+                        loading
+                            ? "Recognizing..."
+                            : "Start Recognition"
+                    }
+                </Button>
 
-                <div className="p-8">
+            </div>
 
-                    <div className="flex justify-between items-center">
+            <div className="grid md:grid-cols-4 gap-6 mt-6">
+
+                <KpiCard
+                    index={0}
+                    title="Today's Recognitions"
+                    value={todaysLogs.filter(l => l.status === "RECOGNIZED").length}
+                    icon={FaCheckCircle}
+                    tone="indigo"
+                />
+
+                <KpiCard
+                    index={1}
+                    title="Accuracy"
+                    value={
+                        todaysLogs.length > 0
+                            ? `${Math.round(
+                                (todaysLogs.filter(l => l.status === "RECOGNIZED").length / todaysLogs.length) * 100
+                            )}%`
+                            : "—"
+                    }
+                    icon={FaMicrochip}
+                    tone="emerald"
+                />
+
+                <KpiCard
+                    index={2}
+                    title="Unknown Faces"
+                    value={todaysLogs.filter(l => l.status === "UNKNOWN").length}
+                    icon={FaTimesCircle}
+                    tone="amber"
+                />
+
+                <KpiCard
+                    index={3}
+                    title="Camera Status"
+                    value={engine?.status || "Unknown"}
+                    icon={FaVideo}
+                    tone={engineReady ? "emerald" : "red"}
+                />
+
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6 mt-6">
+
+                {/* Live camera hero card */}
+
+                <Card padding="lg" className="relative overflow-hidden">
+
+                    <div className="flex items-center gap-4">
+
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0 ${loading ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-600"}`}>
+                            <FaCamera />
+                        </div>
 
                         <div>
-
-                            <h1 className="text-4xl font-bold">
-
-                                Live Face Recognition
-
-                            </h1>
-
-                            <p className="text-gray-500 mt-2">
-
-                                AI Powered Attendance Recognition
-
-                            </p>
-
-                        </div>
-
-                        <button
-
-                            onClick={handleRecognition}
-
-                            disabled={loading}
-
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl flex items-center gap-3"
-
-                        >
-
-                            <FaPlay />
-
-                            {
-
-                                loading
-
-                                    ? "Recognizing..."
-
-                                    : "Start Recognition"
-
-                            }
-
-                        </button>
-
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-6 mt-8">
-
-                        <StatsCard
-
-                            title="Camera"
-
-                            value="ONLINE"
-
-                            color="text-green-600"
-
-                        />
-
-                        <StatsCard
-
-                            title="Recognition Engine"
-
-                            value={engine?.status || "OFFLINE"}
-
-                            color="text-indigo-600"
-
-                        />
-
-                        <StatsCard
-
-                            title="Today's Recognition"
-
-                            value={result?.total || 0}
-
-                            color="text-orange-600"
-
-                        />
-
-                    </div>
-
-                    <div className="grid lg:grid-cols-2 gap-8 mt-8">
-
-                        <div className="bg-white rounded-2xl shadow-lg p-8">
-
-                            <div className="flex items-center gap-4">
-
-                                <FaCamera
-
-                                    className="text-5xl text-indigo-600"
-
-                                />
-
-                                <div>
-
-                                    <h2 className="text-2xl font-bold">
-
-                                        Recognition Status
-
-                                    </h2>
-
-                                    <p className="text-gray-500">
-
-                                        Ready to detect faces
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                            <div className="mt-8">
-
-                                <div className="bg-slate-100 rounded-xl h-80 flex justify-center items-center">
-
-                                    <div className="text-center">
-
-                                        <FaCamera
-
-                                            className="text-7xl mx-auto text-gray-400"
-
-                                        />
-
-                                        <p className="mt-4 text-gray-500">
-
-                                            Camera Preview
-
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div className="bg-white rounded-2xl shadow-lg p-8">
-
-                            <h2 className="text-2xl font-bold mb-6">
-
-                                Recognition Result
-
+                            <h2 className="text-lg font-semibold text-slate-800">
+                                Recognition Status
                             </h2>
+                            <p className="text-gray-500 text-sm">
+                                {
+                                    loading
+                                        ? "Scanning for faces..."
+                                        : "Ready to detect faces"
+                                }
+                            </p>
+                        </div>
 
-                            {
+                    </div>
 
-                                result?.recognized?.length > 0
+                    <div className="mt-6">
 
-                                    ?
+                        <div className="relative bg-slate-900 rounded-[20px] h-72 flex justify-center items-center overflow-hidden">
 
-                                    result.recognized.map((student, index) => (
+                            {/* Corner brackets - viewfinder framing */}
 
-                                        <div
+                            <div className="absolute inset-5 pointer-events-none">
+                                <span className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-indigo-400/70 rounded-tl-lg" />
+                                <span className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-indigo-400/70 rounded-tr-lg" />
+                                <span className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-indigo-400/70 rounded-bl-lg" />
+                                <span className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-indigo-400/70 rounded-br-lg" />
+                            </div>
 
-                                            key={index}
+                            {/* Scanning line while a recognition run is in flight */}
 
-                                            className="border rounded-xl p-5 mb-5"
+                            <AnimatePresence>
+                                {
+                                    loading &&
+                                    <motion.div
+                                        initial={{ top: "10%", opacity: 0 }}
+                                        animate={{
+                                            top: ["10%", "90%", "10%"],
+                                            opacity: 1
+                                        }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            top: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
+                                            opacity: { duration: 0.2 }
+                                        }}
+                                        className="absolute left-5 right-5 h-0.5 bg-emerald-400 shadow-[0_0_12px_2px_rgba(52,211,153,0.7)]"
+                                    />
+                                }
+                            </AnimatePresence>
 
-                                        >
+                            <div className="text-center relative z-10 px-6">
 
-                                            <div className="flex items-center gap-4">
+                                <motion.div
+                                    animate={loading ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+                                    transition={{ duration: 1.2, repeat: loading ? Infinity : 0 }}
+                                >
+                                    <FaCamera className="text-5xl mx-auto text-slate-500" />
+                                </motion.div>
 
-                                                <FaUserGraduate
+                                <p className="mt-4 text-slate-400 text-sm max-w-xs mx-auto">
+                                    Camera preview isn't streamed to the browser -
+                                    recognition runs server-side against the
+                                    connected webcam.
+                                </p>
 
-                                                    className="text-4xl text-indigo-600"
-
-                                                />
-
-                                                <div>
-
-                                                    <h3 className="text-xl font-bold">
-
-                                                        {student.name}
-
-                                                    </h3>
-
-                                                    <p>
-
-                                                        {student.subject}
-
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4 mt-6">
-
-                                                <div>
-
-                                                    <p className="text-gray-500">
-
-                                                        Confidence
-
-                                                    </p>
-
-                                                    <h2 className="font-bold">
-
-                                                        {student.confidence}%
-
-                                                    </h2>
-
-                                                </div>
-
-                                                <div>
-
-                                                    <p className="text-gray-500">
-
-                                                        Status
-
-                                                    </p>
-
-                                                    <div className="flex items-center gap-2 text-green-600">
-
-                                                        <FaCheckCircle />
-
-                                                        {student.status}
-
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    ))
-
-                                    :
-
-                                    <div className="text-center py-20">
-
-                                        <FaMicrochip
-
-                                            className="text-6xl mx-auto text-gray-400"
-
-                                        />
-
-                                        <p className="mt-6 text-gray-500">
-
-                                            No Recognition Yet
-
-                                        </p>
-
-                                    </div>
-
-                            }
+                            </div>
 
                         </div>
 
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
+                </Card>
 
-                        <h2 className="text-2xl font-bold mb-6">
+                {/* Recognition result panel */}
 
-                            Engine Information
+                <Card padding="lg">
 
-                        </h2>
+                    <h2 className="text-lg font-semibold text-slate-800 mb-6">
+                        Recognition Result
+                    </h2>
 
-                        <div className="grid md:grid-cols-3 gap-6">
-
-                            <div>
-
-                                <FaClock className="text-3xl text-indigo-600" />
-
-                                <h3 className="font-semibold mt-3">
-
-                                    Execution Time
-
-                                </h3>
-
-                                <p>
-
-                                    {result?.executionTime || "--"}
-
-                                </p>
-
+                    {
+                        result?.recognitionLogs?.length > 0
+                            ?
+                            <div className="space-y-3">
+                                {
+                                    result.recognitionLogs.map((log, index) => (
+                                        <RecognitionResultCard
+                                            key={index}
+                                            log={log}
+                                            index={index}
+                                        />
+                                    ))
+                                }
                             </div>
+                            :
+                            <EmptyState
+                                icon={FaMicrochip}
+                                title="No recognition run yet"
+                                message='Click "Start Recognition" above to scan for faces.'
+                            />
+                    }
 
-                            <div>
+                </Card>
 
-                                <FaMicrochip className="text-3xl text-green-600" />
+            </div>
 
-                                <h3 className="font-semibold mt-3">
+            <Card padding="lg" className="mt-6">
 
-                                    Engine Status
+                <h2 className="text-lg font-semibold text-slate-800 mb-6">
+                    Last Run Details
+                </h2>
 
-                                </h3>
+                <div className="grid md:grid-cols-3 xl:grid-cols-5 gap-6">
 
-                                <p>
-
-                                    {engine?.status || "OFFLINE"}
-
-                                </p>
-
-                            </div>
-
-                            <div>
-
-                                <FaCheckCircle className="text-3xl text-orange-600" />
-
-                                <h3 className="font-semibold mt-3">
-
-                                    Total Recognized
-
-                                </h3>
-
-                                <p>
-
-                                    {result?.total || 0}
-
-                                </p>
-
-                            </div>
-
+                    <div className="flex items-center gap-3">
+                        <FaClock className="text-2xl text-indigo-600" />
+                        <div>
+                            <p className="text-xs text-gray-400">
+                                Execution Time
+                            </p>
+                            <p className="font-medium text-slate-700">
+                                {result?.executionTime || "—"}
+                            </p>
                         </div>
+                    </div>
 
+                    <div className="flex items-center gap-3">
+                        <FaMicrochip className="text-2xl text-indigo-600" />
+                        <div>
+                            <p className="text-xs text-gray-400">
+                                Engine Status
+                            </p>
+                            <p className="font-medium text-slate-700">
+                                {engine?.status || "Unknown"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <FaCheckCircle className="text-2xl text-indigo-600" />
+                        <div>
+                            <p className="text-xs text-gray-400">
+                                Total Recognized
+                            </p>
+                            <p className="font-medium text-slate-700">
+                                {result?.total ?? 0}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <FaCamera className="text-2xl text-indigo-600" />
+                        <div>
+                            <p className="text-xs text-gray-400">
+                                Vision Module
+                            </p>
+                            <p className="font-medium text-slate-700">
+                                {engine?.visionModule || "Unknown"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <FaUserCheck className="text-2xl text-indigo-600" />
+                        <div>
+                            <p className="text-xs text-gray-400">
+                                Registered Faces
+                            </p>
+                            <p className="font-medium text-slate-700">
+                                {engine?.registeredFaces ?? "—"}
+                            </p>
+                        </div>
                     </div>
 
                 </div>
 
-            </div>
+            </Card>
 
-        </div>
+        </AppLayout>
 
     );
 

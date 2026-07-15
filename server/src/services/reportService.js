@@ -9,17 +9,36 @@ const {
     generateAttendanceExcel
 } = require("../utils/excelGenerator");
 
-const generatePDFReport = async () => {
+const generatePDFReport = async (sessionId = null) => {
 
-    // Find active session
-    const session = await AttendanceSession.findOne({
-        status: "ACTIVE"
-    }).populate("subject");
+    // Backward compatible: no sessionId -> fall back to the most
+    // recently ended session (reports only ever make sense for a
+    // finished session - see the status check below). Passing a
+    // sessionId lets Reports generate a report for any specific
+    // ended session.
+    const session = sessionId
+        ? await AttendanceSession.findById(sessionId).populate("subject")
+        : await AttendanceSession.findOne({ status: "ENDED" })
+            .sort({ updatedAt: -1 })
+            .populate("subject");
 
     if (!session) {
 
         throw new Error(
-            "No active session found."
+            sessionId ? "Session not found." : "No completed session found."
+        );
+
+    }
+
+    // Reports only make sense for a session that's actually finished -
+    // expectedStudents/presentStudents/absentStudents are only
+    // computed once completeSession runs, and a report for a session
+    // still in progress would look final when it isn't.
+    if (session.status !== "ENDED") {
+
+        throw new Error(
+            "This session hasn't ended yet. End the session before " +
+            "generating a report."
         );
 
     }
@@ -76,25 +95,30 @@ const generatePDFReport = async () => {
 
 };
 
-const generateExcelReport = async () => {
+const generateExcelReport = async (sessionId = null) => {
 
-    const session = await AttendanceSession
-
-    .findOne({
-
-        status: "ACTIVE"
-
-    })
-
-    .populate("subject");
+    const session = sessionId
+        ? await AttendanceSession.findById(sessionId).populate("subject")
+        : await AttendanceSession.findOne({ status: "ENDED" })
+            .sort({ updatedAt: -1 })
+            .populate("subject");
 
     if (!session)
 
         throw new Error(
 
-            "No active session found."
+            sessionId ? "Session not found." : "No completed session found."
 
         );
+
+    if (session.status !== "ENDED") {
+
+        throw new Error(
+            "This session hasn't ended yet. End the session before " +
+            "generating a report."
+        );
+
+    }
 
     const attendance = await Attendance
 

@@ -2,6 +2,7 @@ const Student = require("../models/Student");
 const Attendance = require("../models/Attendance");
 const AttendanceSession = require("../models/AttendanceSession");
 const Subject = require("../models/Subject");
+const RecognitionLog = require("../models/RecognitionLog");
 
 const getAnalytics = async () => {
 
@@ -155,13 +156,53 @@ const getAnalytics = async () => {
         }
     ]);
 
-    // Recognition Statistics
+    // Recognition Statistics - computed from real RecognitionLog entries
+    // (previously this was a hardcoded stub; now that every recognition
+    // attempt is actually logged, we can report real numbers).
+    const recognizedCount = await RecognitionLog.countDocuments({
+        status: "RECOGNIZED"
+    });
+
+    const unknownCount = await RecognitionLog.countDocuments({
+        status: "UNKNOWN"
+    });
+
+    const totalRecognitionAttempts = recognizedCount + unknownCount;
+
+    const confidenceAgg = await RecognitionLog.aggregate([
+        {
+            $match: { status: "RECOGNIZED" }
+        },
+        {
+            $group: {
+                _id: null,
+                avgConfidence: { $avg: "$confidence" }
+            }
+        }
+    ]);
+
     const recognitionStats = {
-        accuracy: 98.4,
-        averageConfidence: 95.8,
-        unknownFaces: 0,
-        recognitionTime: 0.42
+        accuracy: totalRecognitionAttempts > 0
+            ? Number(((recognizedCount / totalRecognitionAttempts) * 100).toFixed(1))
+            : 0,
+        averageConfidence: confidenceAgg.length > 0
+            ? Number(confidenceAgg[0].avgConfidence.toFixed(1))
+            : 0,
+        unknownFaces: unknownCount,
+        totalAttempts: totalRecognitionAttempts
     };
+
+    // Session Summary - expected/present/absent per completed session,
+    // so Reports/Analytics actually surface the numbers the attendance
+    // engine already computes at session-end instead of leaving them
+    // stranded on the AttendanceSession documents.
+    const sessionSummary = await AttendanceSession.find({
+        status: "ENDED"
+    })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate("subject")
+        .select("subject date expectedStudents presentStudents absentStudents");
 
     return {
         success: true,
@@ -180,7 +221,9 @@ const getAnalytics = async () => {
         branchAttendance,
         shortageStudents,
         weeklyHeatmap,
-        recognitionStats
+        recognitionStats,
+        sessionSummary
+
     };
 
 };
