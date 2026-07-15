@@ -10,7 +10,6 @@ import ConfirmModal from "../components/ConfirmModal";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import FormSelect from "../components/ui/FormSelect";
-import FormInput from "../components/ui/FormInput";
 import EmptyState from "../components/ui/EmptyState";
 import Pagination from "../components/ui/Pagination";
 import SortableTh from "../components/ui/SortableTh";
@@ -26,11 +25,17 @@ import {
 } from "../services/facultySubjectService";
 
 const getSortValue = (a, field) => {
+    if (!a) return null;
+    const facultyName = a.faculty?.name || "";
+    const department = a.faculty?.department || "";
+    const subjectName = a.subject?.name || "";
+    const acadYear = a.academicYear || "";
+
     switch (field) {
-        case "faculty": return a.faculty?.name?.toLowerCase();
-        case "department": return a.faculty?.department?.toLowerCase();
-        case "subject": return a.subject?.name?.toLowerCase();
-        case "year": return a.academicYear;
+        case "faculty": return facultyName.toLowerCase();
+        case "department": return department.toLowerCase();
+        case "subject": return subjectName.toLowerCase();
+        case "year": return acadYear.toLowerCase();
         default: return null;
     }
 };
@@ -64,8 +69,8 @@ const FacultyAssignments = () => {
                     getSubjects()
                 ]);
 
-            setAssignments(assignmentData.assignments || []);
-            setFaculty(facultyData.faculty || []);
+            setAssignments(assignmentData?.assignments || []);
+            setFaculty(facultyData?.faculty || []);
             setSubjects(subjectData || []);
         } catch {
             toast.error("Failed to load faculty assignments");
@@ -91,10 +96,7 @@ const FacultyAssignments = () => {
             reset({ faculty: "", subject: "", academicYear: "2025-26" });
             loadAll();
         } catch (err) {
-            toast.error(
-                err.response?.data?.message ||
-                "Unable to assign subject"
-            );
+            toast.error(err.response?.data?.message || "Unable to assign subject");
         } finally {
             setSaving(false);
         }
@@ -108,35 +110,37 @@ const FacultyAssignments = () => {
             setRemovingAssignment(null);
             loadAll();
         } catch (err) {
-            toast.error(
-                err.response?.data?.message ||
-                "Unable to remove assignment"
-            );
+            toast.error(err.response?.data?.message || "Unable to remove assignment");
         } finally {
             setSaving(false);
         }
     };
 
-    const filteredAssignments = assignments.filter((a) => {
+    const filteredAssignments = (assignments || []).filter((a) => {
+        if (!a) return false;
         const text = search.toLowerCase();
+        const facultyName = (a.faculty?.name || "").toLowerCase();
+        const department = (a.faculty?.department || "").toLowerCase();
+        const subjectName = (a.subject?.name || "").toLowerCase();
+        const subjectCode = (a.subject?.code || "").toLowerCase();
+
         return (
-            a.faculty?.name?.toLowerCase().includes(text) ||
-            a.faculty?.department?.toLowerCase().includes(text) ||
-            a.subject?.name?.toLowerCase().includes(text) ||
-            a.subject?.code?.toLowerCase().includes(text)
+            facultyName.includes(text) ||
+            department.includes(text) ||
+            subjectName.includes(text) ||
+            subjectCode.includes(text)
         );
     });
 
     const { rows, page, setPage, totalPages, pageSize, total, sortField, sortDir, toggleSort } =
         useDataTable(filteredAssignments, { pageSize: 8, getSortValue });
 
-    const uniqueFacultyCount = Array.from(new Set(assignments.map(a => a.faculty?._id).filter(Boolean))).length;
+    const uniqueFacultyCount = Array.from(new Set((assignments || []).map(a => a?.faculty?._id).filter(Boolean))).length;
 
     return (
         <AppLayout>
             <div className="flex flex-col gap-6 max-w-[1400px] mx-auto px-4 py-2">
                 
-                {/* 1. Header Information Area */}
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900">
                         Faculty Subject Assignments
@@ -146,15 +150,13 @@ const FacultyAssignments = () => {
                     </p>
                 </div>
 
-                {/* 2. Top Split Dashboard View Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch w-full">
                     
-                    {/* Metrics Cards Container Block */}
                     <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 h-full">
                         <KpiCard
                             index={0}
                             title="Total Active Mappings"
-                            value={assignments.length}
+                            value={assignments?.length || 0}
                             icon={FaClipboardList}
                             tone="indigo"
                         />
@@ -167,7 +169,6 @@ const FacultyAssignments = () => {
                         />
                     </div>
 
-                    {/* Uniform Expanded Input Form Frame Container */}
                     <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-center h-full">
                         <h2 className="text-sm font-bold text-slate-500 uppercase mb-4 tracking-normal">
                             Assign a Subject
@@ -184,10 +185,8 @@ const FacultyAssignments = () => {
                                     {...register("faculty")}
                                 >
                                     <option value="">Select Faculty</option>
-                                    {faculty.map((f) => (
-                                        <option key={f._id} value={f._id}>
-                                            {f.name}
-                                        </option>
+                                    {(faculty || []).map((f) => (
+                                        f && <option key={f._id} value={f._id}>{f.name}</option>
                                     ))}
                                 </FormSelect>
                             </div>
@@ -200,21 +199,27 @@ const FacultyAssignments = () => {
                                     {...register("subject")}
                                 >
                                     <option value="">Select Subject</option>
-                                    {subjects.map((s) => (
-                                        <option key={s._id} value={s._id}>
-                                            {s.code} - {s.name}
-                                        </option>
+                                    {(subjects || []).map((s) => (
+                                        s && <option key={s._id} value={s._id}>{s.code} - {s.name}</option>
                                     ))}
                                 </FormSelect>
                             </div>
 
                             <div className="w-full">
-                                <FormInput
-                                    label="Academic Year (optional)"
-                                    icon={FaCalendarAlt}
-                                    placeholder="2025-26"
-                                    {...register("academicYear")}
-                                />
+                                <div className="flex flex-col gap-1.5 w-full">
+                                    <label className="text-xs font-bold text-slate-500 uppercase">
+                                        Academic Year (optional)
+                                    </label>
+                                    <div className="relative w-full">
+                                        <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                                        <input
+                                            type="text"
+                                            placeholder="2025-26"
+                                            {...register("academicYear")}
+                                            className="w-full h-10 border border-slate-200 rounded-xl !pl-11 pr-4 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 text-xs font-semibold text-slate-600 transition"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="w-full">
@@ -231,7 +236,6 @@ const FacultyAssignments = () => {
                     </div>
                 </div>
 
-                {/* 3. Stretched Action Filtering Search Row */}
                 <div className="flex items-center justify-between gap-4 bg-white px-5 py-3 border border-slate-100 rounded-2xl shadow-sm w-full">
                     <SearchBar
                         className="flex-1 w-full"
@@ -249,7 +253,6 @@ const FacultyAssignments = () => {
                     </button>
                 </div>
 
-                {/* 4. Symmetrical Grid Layout Processing Table Frame */}
                 <div className="w-full">
                     {loading ? (
                         <TableSkeleton rows={5} columns={5} />
@@ -276,37 +279,39 @@ const FacultyAssignments = () => {
                                     </thead>
 
                                     <tbody className="bg-white">
-                                        {rows.map((a) => (
-                                            <tr
-                                                key={a._id}
-                                                className="border-b border-slate-100 last:border-0 transition hover:bg-indigo-50/60"
-                                            >
-                                                <td className="!pl-6 pr-4 py-4 font-bold text-slate-800">
-                                                    {a.faculty?.name || "Unknown"}
-                                                </td>
-                                                <td className="px-6 py-4 font-semibold text-slate-600">
-                                                    {a.faculty?.department || "—"}
-                                                </td>
-                                                <td className="px-6 py-4 text-slate-700 font-medium whitespace-nowrap">
-                                                    {a.subject?.code ? (
-                                                        <span className="text-indigo-600 font-bold mr-3.5 inline-block">
-                                                            {a.subject.code}
-                                                        </span>
-                                                    ) : null}
-                                                    <span className="text-slate-800 font-medium">{a.subject?.name || "Unknown"}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-slate-600 font-semibold tabular-nums">
-                                                    {a.academicYear || "—"}
-                                                </td>
-                                                <td className="pl-4 !pr-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => setRemovingAssignment(a)}
-                                                        className="inline-flex items-center text-rose-600 hover:text-rose-800 font-bold transition-all text-sm py-1 px-3 rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-100"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                        {rows.map((a, idx) => (
+                                            a && (
+                                                <tr
+                                                    key={a._id || idx}
+                                                    className="border-b border-slate-100 last:border-0 transition hover:bg-indigo-50/60"
+                                                >
+                                                    <td className="!pl-6 pr-4 py-4 font-bold text-slate-800">
+                                                        {a.faculty?.name || "Unknown"}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-semibold text-slate-600">
+                                                        {a.faculty?.department || "—"}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-slate-700 font-medium whitespace-nowrap">
+                                                        {a.subject?.code ? (
+                                                            <span className="text-indigo-600 font-bold mr-3.5 inline-block">
+                                                                {a.subject.code}
+                                                            </span>
+                                                        ) : null}
+                                                        <span className="text-slate-800 font-medium">{a.subject?.name || "Unknown"}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-slate-600 font-semibold tabular-nums">
+                                                        {a.academicYear || "—"}
+                                                    </td>
+                                                    <td className="pl-4 !pr-6 py-4 text-center">
+                                                        <button
+                                                            onClick={() => setRemovingAssignment(a)}
+                                                            className="inline-flex items-center text-rose-600 hover:text-rose-800 font-bold transition-all text-sm py-1 px-3 rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-100"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            )
                                         ))}
                                     </tbody>
                                 </table>
@@ -329,7 +334,7 @@ const FacultyAssignments = () => {
                 title="Remove Assignment"
                 message={
                     removingAssignment
-                        ? `Remove ${removingAssignment.faculty?.name} from ${removingAssignment.subject?.name}? They will no longer be able to start sessions for this subject.`
+                        ? `Remove ${removingAssignment.faculty?.name || "Unknown"} from ${removingAssignment.subject?.name || "Unknown"}? They will no longer be able to start sessions for this subject.`
                         : ""
                 }
                 confirmText="Remove"
