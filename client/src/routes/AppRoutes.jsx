@@ -7,7 +7,6 @@ import Faculty from "../pages/Faculty";
 import Subjects from "../pages/Subjects";
 import Sessions from "../pages/Sessions";
 import Attendance from "../pages/Attendance";
-import Analytics from "../pages/Analytics";
 import Reports from "../pages/Reports";
 import StudentProfile from "../pages/StudentProfile";
 import FacultyAssignments from "../pages/FacultyAssignments";
@@ -22,14 +21,12 @@ const AppRoutes = () => {
             <Routes>
 
                 {/* Public Route */}
-
                 <Route
                     path="/login"
                     element={<Login />}
                 />
 
                 {/* Dashboard */}
-
                 <Route
                     path="/"
                     element={
@@ -40,7 +37,6 @@ const AppRoutes = () => {
                 />
 
                 {/* Students */}
-
                 <Route
                     path="/students"
                     element={
@@ -60,7 +56,6 @@ const AppRoutes = () => {
                 />
 
                 {/* Faculty */}
-
                 <Route
                     path="/faculty"
                     element={
@@ -71,7 +66,6 @@ const AppRoutes = () => {
                 />
 
                 {/* Subjects */}
-
                 <Route
                     path="/subjects"
                     element={
@@ -81,8 +75,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Enrollments (Admin Only) */}
-
+                {/* Enrollments */}
                 <Route
                     path="/enrollments"
                     element={
@@ -92,8 +85,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Faculty Assignments (Admin Only) */}
-
+                {/* Faculty Assignments */}
                 <Route
                     path="/faculty-assignments"
                     element={
@@ -104,7 +96,6 @@ const AppRoutes = () => {
                 />
 
                 {/* Sessions */}
-
                 <Route
                     path="/sessions"
                     element={
@@ -114,8 +105,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Attendance (includes Live Face Recognition) */}
-
+                {/* Attendance */}
                 <Route
                     path="/attendance"
                     element={
@@ -126,7 +116,6 @@ const AppRoutes = () => {
                 />
 
                 {/* Recognition History */}
-
                 <Route
                     path="/recognition-history"
                     element={
@@ -136,19 +125,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Analytics */}
-
-                <Route
-                    path="/analytics"
-                    element={
-                        <ProtectedRoute>
-                            <Analytics />
-                        </ProtectedRoute>
-                    }
-                />
-
                 {/* Reports */}
-
                 <Route
                     path="/reports"
                     element={

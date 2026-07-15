@@ -1,190 +1,322 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { 
-    FaCalendarCheck, FaUserCheck, FaUserTimes, 
-    FaFilePdf, FaFileExcel, FaListAlt, FaExclamationTriangle 
+import TableSkeleton from "../components/ui/TableSkeleton";
+import {
+    FaCalendarCheck,
+    FaUserCheck,
+    FaUserTimes,
+    FaFilePdf,
+    FaFileExcel,
+    FaListAlt
 } from "react-icons/fa";
 
 import AppLayout from "../layouts/AppLayout";
 import KpiCard from "../components/ui/KpiCard";
-import TableSkeleton from "../components/ui/TableSkeleton";
+import Card from "../components/ui/Card";
 import EmptyState from "../components/ui/EmptyState";
-import { 
-    downloadPdfReport, 
-    downloadExcelReport,
-    downloadShortageReport 
+
+import {
+    downloadPdfReport,
+    downloadExcelReport
 } from "../services/reportService";
+
 import { getSessions } from "../services/sessionService";
 import useAttendanceSocket from "../hooks/useAttendanceSocket";
 
-/* ---------------------------------------------------------
-   Professional Primitives
---------------------------------------------------------- */
-
-const SectionHeading = ({ children }) => (
-    <h2 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider mb-5">{children}</h2>
-);
-
 const Reports = () => {
+
     const [sessions, setSessions] = useState([]);
+
     const [loadingSessions, setLoadingSessions] = useState(true);
+
+    // Tracks which specific session + format is downloading, so only
+    // that row's button shows a spinner instead of the whole page.
     const [downloadingKey, setDownloadingKey] = useState(null);
 
     const loadSessions = async () => {
+
         try {
+
             const data = await getSessions();
-            const sessionList = data?.sessions || [];
-            const sorted = [...sessionList].sort(
+
+            // Newest first, so the most relevant sessions are on top.
+            const sorted = [...(data.sessions || [])].sort(
                 (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
             );
+
             setSessions(sorted);
-        } catch (err) {
-            toast.error("Unable to load sessions");
-        } finally {
-            setLoadingSessions(false);
+
         }
+
+        catch (err) {
+
+            console.error(err);
+
+            toast.error("Unable to load sessions");
+
+        }
+
+        finally {
+
+            setLoadingSessions(false);
+
+        }
+
     };
 
-    useEffect(() => { loadSessions(); }, []);
-    useAttendanceSocket(null, () => { loadSessions(); });
+    useEffect(() => {
+
+        loadSessions();
+
+    }, []);
+
+    // A session ending in the Sessions page (or reopened, corrected,
+    // and ended again) should make it appear here without the user
+    // having to manually refresh the Reports page.
+    useAttendanceSocket(null, () => {
+
+        loadSessions();
+
+    });
 
     const handleDownload = async (session, format) => {
+
         const key = `${session._id}-${format}`;
+
         try {
+
             setDownloadingKey(key);
-            if (format === "pdf") await downloadPdfReport(session._id);
-            else await downloadExcelReport(session._id);
-            toast.success(`${format.toUpperCase()} downloaded`);
-        } catch (err) {
-            toast.error(`Unable to generate ${format.toUpperCase()}`);
-        } finally {
-            setDownloadingKey(null);
+
+            if (format === "pdf") {
+                await downloadPdfReport(session._id);
+            } else {
+                await downloadExcelReport(session._id);
+            }
+
+            toast.success(
+                `${format.toUpperCase()} downloaded successfully`
+            );
+
         }
+
+        catch (err) {
+
+            console.error(err);
+
+            toast.error(
+                err.response?.data?.message ||
+                err.message ||
+                `Unable to generate ${format.toUpperCase()}`
+            );
+
+        }
+
+        finally {
+
+            setDownloadingKey(null);
+
+        }
+
     };
 
-    // Logic for Shortage Report
-    const handleDownloadShortage = async () => {
-        try {
-            setDownloadingKey("shortage");
-            await downloadShortageReport();
-            toast.success("Shortage report downloaded successfully");
-        } catch (err) {
-            toast.error("Failed to generate shortage report");
-        } finally {
-            setDownloadingKey(null);
-        }
-    };
+    const endedSessions = sessions.filter((s) => s.status === "ENDED");
+    const activeSession = sessions.find((s) => s.status === "ACTIVE");
 
-    const endedSessions = Array.isArray(sessions) ? sessions.filter((s) => s?.status === "ENDED") : [];
-    const activeSession = Array.isArray(sessions) ? sessions.find((s) => s?.status === "ACTIVE") : null;
+    const totalPresent = endedSessions.reduce(
+        (sum, s) => sum + (s.presentStudents || 0),
+        0
+    );
 
-    const totalPresent = endedSessions.reduce((sum, s) => sum + (s?.presentStudents || 0), 0);
-    const totalAbsent = endedSessions.reduce((sum, s) => sum + (s?.absentStudents || 0), 0);
+    const totalAbsent = endedSessions.reduce(
+        (sum, s) => sum + (s.absentStudents || 0),
+        0
+    );
 
     return (
+
         <AppLayout>
-            <div className="flex flex-col gap-y-8 p-1">
-                
-                {/* Header with Shortage Report Button */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
-                        <p className="text-sm text-slate-500 mt-1">Download attendance reports for any session.</p>
-                    </div>
-                    <button 
-                        onClick={handleDownloadShortage}
-                        disabled={downloadingKey === "shortage"}
-                        className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-bold uppercase text-red-600 transition disabled:opacity-50"
-                    >
-                        <FaExclamationTriangle /> {downloadingKey === "shortage" ? "Generating..." : "Shortage Report (<75%)"}
-                    </button>
-                </div>
 
-                {/* KPI Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <KpiCard title="Completed Sessions" value={endedSessions.length} icon={FaCalendarCheck} tone="indigo" />
-                    <KpiCard title="Total Present" value={totalPresent} icon={FaUserCheck} tone="emerald" />
-                    <KpiCard title="Total Absent" value={totalAbsent} icon={FaUserTimes} tone="red" />
-                </div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-800">
+                Reports
+            </h1>
 
-                {/* Active Session Alert */}
-                {activeSession && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <p className="text-xs font-bold text-slate-400 uppercase">Active Session</p>
-                        <h2 className="text-lg font-bold text-slate-900 mt-1">{activeSession.subject?.name || "Unknown"}</h2>
-                    </div>
-                )}
+            <p className="text-gray-500 mt-2">
+                Download attendance reports for any session.
+            </p>
 
-                {/* Completed Sessions Table */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 flex items-center gap-2">
-                        <FaListAlt className="text-indigo-600" />
-                        <SectionHeading>Completed Sessions</SectionHeading>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
 
-                    {loadingSessions ? (
-                        <TableSkeleton rows={4} columns={6} />
-                    ) : endedSessions.length === 0 ? (
-                        <EmptyState icon={FaCalendarCheck} title="No sessions yet" message="Reports appear after sessions end." />
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="text-[11px] uppercase text-slate-400 tracking-wider bg-slate-50/50">
-                                    <tr>
-                                        <th className="px-6 py-4 font-bold">Subject</th>
-                                        <th className="px-6 py-4 font-bold">Date</th>
-                                        <th className="px-6 py-4 font-bold text-right">Expected</th>
-                                        <th className="px-6 py-4 font-bold text-right">Present</th>
-                                        <th className="px-6 py-4 font-bold text-right">Absent</th>
-                                        <th className="px-6 py-4 font-bold text-right">Attendance %</th>
-                                        <th className="px-6 py-4 font-bold text-center">Download</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 bg-white">
-                                    {endedSessions.map((s) => {
-                                        const expected = s.expectedStudents || 0;
-                                        const present = s.presentStudents || 0;
-                                        const pct = expected > 0 ? ((present / expected) * 100).toFixed(1) : "0.0";
-                                        
-                                        return (
-                                            <tr key={s._id} className="hover:bg-slate-50 transition">
-                                                <td className="px-6 py-4 font-semibold text-slate-900">{s.subject?.name || "—"}</td>
-                                                <td className="px-6 py-4 text-slate-600">{s.date || "—"}</td>
-                                                <td className="px-6 py-4 text-right text-slate-600">{expected}</td>
-                                                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{present}</td>
-                                                <td className="px-6 py-4 text-right font-semibold text-red-600">{s.absentStudents || 0}</td>
-                                                <td className="px-6 py-4 text-right font-semibold text-slate-800">{pct}%</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex gap-2 justify-center">
-                                                        <button 
-                                                            onClick={() => handleDownload(s, "pdf")}
-                                                            disabled={downloadingKey === `${s._id}-pdf`}
-                                                            className="text-red-500 hover:text-red-700 p-2 transition disabled:opacity-50"
-                                                            title="PDF"
-                                                        >
-                                                            <FaFilePdf size={18} />
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleDownload(s, "excel")}
-                                                            disabled={downloadingKey === `${s._id}-excel`}
-                                                            className="text-emerald-600 hover:text-emerald-800 p-2 transition disabled:opacity-50"
-                                                            title="Excel"
-                                                        >
-                                                            <FaFileExcel size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+                <KpiCard index={0} title="Completed Sessions" value={endedSessions.length} icon={FaCalendarCheck} tone="indigo" />
+                <KpiCard index={1} title="Total Present (all time)" value={totalPresent} icon={FaUserCheck} tone="emerald" />
+                <KpiCard index={2} title="Total Absent (all time)" value={totalAbsent} icon={FaUserTimes} tone="red" />
+
             </div>
+
+            {
+                activeSession &&
+
+                <Card accent="border-l-indigo-600" className="mt-6">
+
+                    <div className="flex justify-between items-center flex-wrap gap-4">
+
+                        <div>
+
+                            <p className="text-sm text-gray-500">
+                                Active Session
+                            </p>
+
+                            <h2 className="text-xl font-bold text-slate-800">
+                                {activeSession.subject?.name || "Unknown Subject"}
+                            </h2>
+
+                            <p className="text-sm text-gray-500 mt-1">
+                                {activeSession.date} &middot; {activeSession.startTime}
+                                {" "}&middot; Expected {activeSession.expectedStudents}
+                            </p>
+
+                        </div>
+
+                        <div className="flex items-center gap-2 text-amber-700 bg-amber-100 px-4 py-2 rounded-lg text-sm font-medium">
+
+                            End this session to generate a report
+
+                        </div>
+
+                    </div>
+
+                </Card>
+            }
+
+            <Card padding="none" className="mt-6 overflow-hidden">
+
+                <div className="p-6 pb-0">
+                    <h2 className="text-lg font-bold flex items-center gap-2.5 text-slate-800">
+                        <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">
+                            <FaListAlt />
+                        </span>
+                        Completed Sessions
+                    </h2>
+                </div>
+
+                {
+                    loadingSessions
+                        ?
+                        <TableSkeleton rows={4} columns={5} />
+                        :
+                        endedSessions.length === 0
+                            ?
+                            <EmptyState
+                                icon={FaCalendarCheck}
+                                title="No completed sessions yet"
+                                message="Reports become available once a session is started and ended."
+                            />
+                            :
+                            <div className="overflow-x-auto mt-4">
+
+                                <table className="min-w-full text-sm">
+
+                                    <thead className="bg-slate-50 text-slate-600 text-xs uppercase tracking-wide">
+
+                                        <tr>
+                                            <th className="px-6 py-4 text-left font-semibold">Subject</th>
+                                            <th className="px-6 py-4 text-left font-semibold">Date</th>
+                                            <th className="px-6 py-4 text-right font-semibold">Expected</th>
+                                            <th className="px-6 py-4 text-right font-semibold">Present</th>
+                                            <th className="px-6 py-4 text-right font-semibold">Absent</th>
+                                            <th className="px-6 py-4 text-right font-semibold">Attendance %</th>
+                                            <th className="px-6 py-4 text-center font-semibold">Download</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {
+                                            endedSessions.map((session) => {
+
+                                                const pct = session.expectedStudents > 0
+                                                    ? (
+                                                        (session.presentStudents / session.expectedStudents) * 100
+                                                    ).toFixed(1)
+                                                    : "0.0";
+
+                                                return (
+
+                                                    <tr
+                                                        key={session._id}
+                                                        className="border-t border-slate-100 hover:bg-slate-50 transition"
+                                                    >
+
+                                                        <td className="px-6 py-4 font-semibold text-slate-800">
+                                                            {session.subject?.name || "Unknown Subject"}
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-slate-600">
+                                                            {session.date}
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-right font-medium text-slate-600">
+                                                            {session.expectedStudents}
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-right font-semibold text-emerald-600">
+                                                            {session.presentStudents}
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-right font-semibold text-red-600">
+                                                            {session.absentStudents}
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-right font-semibold text-slate-700">
+                                                            {pct}%
+                                                        </td>
+
+                                                        <td className="px-6 py-4">
+
+                                                            <div className="flex gap-2 justify-center">
+
+                                                                <button
+                                                                    onClick={() => handleDownload(session, "pdf")}
+                                                                    disabled={downloadingKey === `${session._id}-pdf`}
+                                                                    className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-40 px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+                                                                >
+                                                                    <FaFilePdf />
+                                                                    {downloadingKey === `${session._id}-pdf` ? "..." : "PDF"}
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={() => handleDownload(session, "excel")}
+                                                                    disabled={downloadingKey === `${session._id}-excel`}
+                                                                    className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 disabled:opacity-40 px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+                                                                >
+                                                                    <FaFileExcel />
+                                                                    {downloadingKey === `${session._id}-excel` ? "..." : "Excel"}
+                                                                </button>
+
+                                                            </div>
+
+                                                        </td>
+
+                                                    </tr>
+
+                                                );
+
+                                            })
+                                        }
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+                }
+
+            </Card>
+
         </AppLayout>
+
     );
+
 };
 
 export default Reports;

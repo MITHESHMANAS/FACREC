@@ -5,7 +5,6 @@ import {
     FaBook,
     FaCalendarAlt,
     FaClipboardCheck,
-    FaChartBar,
     FaFilePdf,
     FaUser,
     FaHistory,
@@ -41,9 +40,8 @@ const NAV_GROUPS = {
             ]
         },
         {
-            label: "Insights",
+            label: "Reports",
             items: [
-                { name: "Analytics", icon: FaChartBar, path: "/analytics" },
                 { name: "Reports", icon: FaFilePdf, path: "/reports" }
             ]
         }
@@ -64,7 +62,7 @@ const NAV_GROUPS = {
             ]
         },
         {
-            label: "Insights",
+            label: "Reports",
             items: [
                 { name: "Reports", icon: FaFilePdf, path: "/reports" }
             ]
@@ -80,7 +78,7 @@ const NAV_GROUPS = {
             ]
         },
         {
-            label: "Insights",
+            label: "Reports",
             items: [
                 { name: "Reports", icon: FaFilePdf, path: "/reports" }
             ]
