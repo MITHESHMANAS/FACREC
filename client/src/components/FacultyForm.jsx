@@ -1,122 +1,150 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { FaUser, FaEnvelope, FaIdCard } from "react-icons/fa";
+import { useState, useEffect } from "react";
 
-import FormInput from "./ui/FormInput";
-import FormSelect from "./ui/FormSelect";
-import Button from "./ui/Button";
-
-const FacultyForm = ({
-    onSubmit,
-    loading,
-    initialData = null
-}) => {
-
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors }
-    } = useForm();
+const FacultyForm = ({ initialData, onSubmit, loading }) => {
+    const [formData, setFormData] = useState({
+        name: "",
+        employeeId: "",
+        email: "",
+        department: "",
+        designation: "",
+        isActive: true,
+    });
 
     useEffect(() => {
-
         if (initialData) {
-            reset(initialData);
+            setFormData({
+                name: initialData.name || "",
+                employeeId: initialData.employeeId || "",
+                email: initialData.email || "",
+                department: initialData.department || "",
+                designation: initialData.designation || "",
+                isActive: initialData.isActive ?? true,
+            });
         } else {
-            reset({
+            setFormData({
                 name: "",
-                email: "",
                 employeeId: "",
-                department: "CSE",
-                designation: "Professor"
+                email: "",
+                department: "",
+                designation: "",
+                isActive: true,
             });
         }
+    }, [initialData]);
 
-    }, [initialData, reset]);
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(formData);
+    };
 
     return (
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-            <div>
-
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    Personal Information
-                </p>
-
-                <div className="space-y-4">
-
-                    <FormInput
-                        label="Name"
-                        icon={FaUser}
-                        placeholder="Full name"
-                        error={errors.name?.message}
-                        {...register("name", { required: "Required" })}
-                    />
-
-                    <FormInput
-                        label="Email"
-                        type="email"
-                        icon={FaEnvelope}
-                        placeholder="faculty@college.edu"
-                        error={errors.email?.message}
-                        {...register("email", { required: "Required" })}
-                    />
-
-                </div>
-
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-sm text-slate-700">
+            <div className="flex flex-col gap-1.5">
+                <label className="font-semibold text-slate-600">Employee ID</label>
+                <input
+                    type="text"
+                    name="employeeId"
+                    required
+                    disabled={!!initialData || loading}
+                    value={formData.employeeId}
+                    onChange={handleChange}
+                    placeholder="e.g., FAC-003"
+                    className="h-10 border border-slate-200 rounded-xl px-3 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 transition"
+                />
             </div>
 
-            <div className="pt-5 border-t border-slate-100">
-
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    Professional Details
-                </p>
-
-                <div className="space-y-4">
-
-                    <FormInput
-                        label="Employee ID"
-                        icon={FaIdCard}
-                        placeholder="e.g. EMP1024"
-                        error={errors.employeeId?.message}
-                        {...register("employeeId", { required: "Required" })}
-                    />
-
-                    <div className="grid grid-cols-2 gap-4">
-
-                        <FormSelect label="Department" {...register("department")}>
-                            <option>CSE</option>
-                            <option>ECE</option>
-                            <option>ME</option>
-                            <option>CE</option>
-                        </FormSelect>
-
-                        <FormSelect label="Designation" {...register("designation")}>
-                            <option>Professor</option>
-                            <option>Associate Professor</option>
-                            <option>Assistant Professor</option>
-                        </FormSelect>
-
-                    </div>
-
-                </div>
-
+            <div className="flex flex-col gap-1.5">
+                <label className="font-semibold text-slate-600">Full Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    required
+                    disabled={loading}
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="e.g., Dr. Rajesh Kumar"
+                    className="h-10 border border-slate-200 rounded-xl px-3 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 transition"
+                />
             </div>
 
-            <Button type="submit" loading={loading} className="w-full" size="lg">
-                {
-                    loading
-                        ? (initialData ? "Updating..." : "Adding...")
-                        : (initialData ? "Update Faculty" : "Add Faculty")
-                }
-            </Button>
+            <div className="flex flex-col gap-1.5">
+                <label className="font-semibold text-slate-600">Email Address</label>
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    disabled={loading}
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="name@facrec.edu"
+                    className="h-10 border border-slate-200 rounded-xl px-3 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 transition"
+                />
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                    <label className="font-semibold text-slate-600">Department</label>
+                    <input
+                        type="text"
+                        name="department"
+                        required
+                        disabled={loading}
+                        value={formData.department}
+                        onChange={handleChange}
+                        placeholder="e.g., Computer Science"
+                        className="h-10 border border-slate-200 rounded-xl px-3 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 transition"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                    <label className="font-semibold text-slate-600">Designation</label>
+                    <input
+                        type="text"
+                        name="designation"
+                        required
+                        disabled={loading}
+                        value={formData.designation}
+                        onChange={handleChange}
+                        placeholder="e.g., Assistant Professor"
+                        className="h-10 border border-slate-200 rounded-xl px-3 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 transition"
+                    />
+                </div>
+            </div>
+
+            <div className="flex items-center gap-2 py-2">
+                <input
+                    type="checkbox"
+                    id="isActive"
+                    name="isActive"
+                    disabled={loading}
+                    checked={formData.isActive}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-50"
+                />
+                <label htmlFor="isActive" className="font-medium text-slate-600 select-none">
+                    Active Status (Permit system logins)
+                </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition disabled:opacity-50"
+                >
+                    {loading ? "Saving..." : initialData ? "Update Account" : "Register Faculty"}
+                </button>
+            </div>
         </form>
-
     );
-
 };
 
 export default FacultyForm;
