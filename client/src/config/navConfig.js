@@ -7,17 +7,12 @@ import {
     FaClipboardCheck,
     FaChartBar,
     FaFilePdf,
-    FaCamera,
     FaUser,
     FaHistory,
     FaLayerGroup,
     FaUserCheck
 } from "react-icons/fa";
 
-// Single source of truth for every nav destination in the app, grouped
-// the way the sidebar renders them. The Navbar's search/breadcrumb
-// reads the same flat list so page titles never drift out of sync
-// with what the sidebar calls that route.
 const NAV_GROUPS = {
 
     admin: [
@@ -42,7 +37,6 @@ const NAV_GROUPS = {
             items: [
                 { name: "Sessions", icon: FaCalendarAlt, path: "/sessions" },
                 { name: "Attendance", icon: FaClipboardCheck, path: "/attendance" },
-                { name: "Recognition", icon: FaCamera, path: "/recognition" },
                 { name: "Recognition History", icon: FaHistory, path: "/recognition-history" }
             ]
         },
@@ -66,7 +60,6 @@ const NAV_GROUPS = {
             label: "Attendance",
             items: [
                 { name: "Attendance", icon: FaClipboardCheck, path: "/attendance" },
-                { name: "Recognition", icon: FaCamera, path: "/recognition" },
                 { name: "Recognition History", icon: FaHistory, path: "/recognition-history" }
             ]
         },
@@ -105,8 +98,6 @@ export const getNavGroups = (role, userId) => {
 
 };
 
-// Flat lookup used for page titles/breadcrumbs and the navbar search -
-// built from the admin set since it's the superset of every route.
-export const ALL_NAV_ITEMS = NAV_GROUPS.admin.flatMap((group) => group.items);
+export const ALL_NAV_ITEMS = NAV_GROUPS.admin.flatMap(group => group.items);
 
 export default NAV_GROUPS;

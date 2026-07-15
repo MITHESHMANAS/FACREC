@@ -10,18 +10,15 @@ import Attendance from "../pages/Attendance";
 import Analytics from "../pages/Analytics";
 import Reports from "../pages/Reports";
 import StudentProfile from "../pages/StudentProfile";
-import Recognition from "../pages/Recognition";
 import FacultyAssignments from "../pages/FacultyAssignments";
 import Enrollments from "../pages/Enrollments";
+import RecognitionHistory from "../pages/RecognitionHistory";
 
 import ProtectedRoute from "../components/ProtectedRoute";
-import RecognitionHistory from "../pages/RecognitionHistory";
+
 const AppRoutes = () => {
-
     return (
-
         <BrowserRouter>
-
             <Routes>
 
                 {/* Public Route */}
@@ -84,7 +81,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Enrollments (admin only) */}
+                {/* Enrollments (Admin Only) */}
 
                 <Route
                     path="/enrollments"
@@ -95,7 +92,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Faculty Subject Assignments (admin only) */}
+                {/* Faculty Assignments (Admin Only) */}
 
                 <Route
                     path="/faculty-assignments"
@@ -117,13 +114,24 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Attendance */}
+                {/* Attendance (includes Live Face Recognition) */}
 
                 <Route
                     path="/attendance"
                     element={
                         <ProtectedRoute>
                             <Attendance />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recognition History */}
+
+                <Route
+                    path="/recognition-history"
+                    element={
+                        <ProtectedRoute roles={["admin", "faculty"]}>
+                            <RecognitionHistory />
                         </ProtectedRoute>
                     }
                 />
@@ -150,33 +158,9 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Recognition */}
-
-                <Route
-                    path="/recognition"
-                    element={
-                        <ProtectedRoute>
-                            <Recognition />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-    path="/recognition-history"
-    element={
-        <ProtectedRoute
-            roles={["admin","faculty"]}
-        >
-            <RecognitionHistory />
-        </ProtectedRoute>
-    }
-/>
-
             </Routes>
-
         </BrowserRouter>
-
     );
-
 };
 
 export default AppRoutes;
