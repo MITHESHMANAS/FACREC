@@ -1,176 +1,73 @@
-import { FaCalendarAlt, FaPlay, FaStop, FaRedo } from "react-icons/fa";
+import React from 'react';
+import { FaEdit, FaTrash, FaPlay, FaFlagCheckered, FaSyncAlt } from 'react-icons/fa';
+import Badge from './Badge';
 
-import ActionButtons from "./ActionButtons";
-import RoleGuard from "./RoleGuard";
-import Badge from "./Badge";
-import EmptyState from "./ui/EmptyState";
-import Pagination from "./ui/Pagination";
-import SortableTh from "./ui/SortableTh";
-import useDataTable from "../hooks/useDataTable";
-
-const getSortValue = (session, field) => {
-
-    switch (field) {
-        case "subject": return session.subject?.name?.toLowerCase();
-        case "faculty": return session.faculty?.toLowerCase();
-        case "date": return session.date;
-        case "expected": return session.expectedStudents ?? -1;
-        case "present": return session.presentStudents ?? -1;
-        case "absent": return session.absentStudents ?? -1;
-        case "status": return session.status;
-        default: return null;
-    }
-
-};
-
-const SessionTable = ({
-    sessions,
-    onEdit,
-    onDelete,
-    onStart,
-    onComplete,
-    onReopen
+const SessionTable = ({ 
+    sessions = [], 
+    facultyMap = {}, 
+    onEdit, onDelete, onStart, onComplete, onReopen 
 }) => {
+    
+    const safeSessions = Array.isArray(sessions) ? sessions : [];
 
-    const { rows, page, setPage, totalPages, pageSize, total, sortField, sortDir, toggleSort } =
-        useDataTable(sessions, { pageSize: 8, getSortValue });
-
-    if (sessions.length === 0) {
-
-        return (
-            <EmptyState
-                icon={FaCalendarAlt}
-                title="No sessions yet"
-                message="Create your first attendance session to get started."
-            />
-        );
-
+    if (safeSessions.length === 0) {
+        return <div className="p-16 text-center text-slate-500 font-medium bg-white rounded-2xl border border-slate-200">No sessions found.</div>;
     }
 
     return (
-
-        <div className="overflow-hidden rounded-[20px] shadow-sm border border-slate-200 bg-white">
-
+        <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-
-                <table className="min-w-full text-sm">
-
-                    <thead className="bg-slate-50 text-slate-600 sticky top-0 text-xs uppercase tracking-wide">
+                <table className="min-w-full text-left border-collapse">
+                    <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
                         <tr>
-                            <SortableTh field="subject" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>Subject</SortableTh>
-                            <SortableTh field="faculty" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>Faculty</SortableTh>
-                            <SortableTh field="date" sortField={sortField} sortDir={sortDir} onSort={toggleSort}>Date</SortableTh>
-                            <SortableTh field="expected" sortField={sortField} sortDir={sortDir} onSort={toggleSort} align="center">Expected</SortableTh>
-                            <SortableTh field="present" sortField={sortField} sortDir={sortDir} onSort={toggleSort} align="center">Present</SortableTh>
-                            <SortableTh field="absent" sortField={sortField} sortDir={sortDir} onSort={toggleSort} align="center">Absent</SortableTh>
-                            <SortableTh field="status" sortField={sortField} sortDir={sortDir} onSort={toggleSort} align="center">Status</SortableTh>
-                            <SortableTh align="center">Actions</SortableTh>
+                            {/* Force pl-8 to keep 'Subject' text away from the left edge */}
+                            <th className="!pl-8 pr-6 py-5 text-left">Subject</th>
+                            <th className="px-6 py-5 text-left">Faculty</th>
+                            <th className="px-6 py-5 text-left">Date</th>
+                            <th className="px-6 py-5 text-center">Expected</th>
+                            <th className="px-6 py-5 text-center">Present</th>
+                            <th className="px-6 py-5 text-center">Absent</th>
+                            <th className="px-6 py-5 text-center">Status</th>
+                            <th className="px-6 py-5 text-center">Actions</th>
                         </tr>
                     </thead>
-
-                    <tbody>
-                        {
-                            rows.map((session) => {
-
-                                const canStart = session.status === "SCHEDULED";
-                                const canEnd = session.status === "ACTIVE";
-                                const canReopen = session.status === "ENDED";
-
-                                return (
-
-                                    <tr
-                                        key={session._id}
-                                        className={`border-b border-slate-100 last:border-0 transition hover:bg-slate-50 ${
-                                            session.status === "ACTIVE" ? "bg-emerald-50/50" : ""
-                                        }`}
-                                    >
-                                        <td className="px-6 py-4 font-semibold text-slate-800">
-                                            {session.subject?.name}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">
-                                            {session.faculty}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">
-                                            {session.date}
-                                        </td>
-                                        <td className="px-6 py-4 text-center font-semibold text-slate-700">
-                                            {session.expectedStudents ?? "—"}
-                                        </td>
-                                        <td className="px-6 py-4 text-center font-semibold text-emerald-700">
-                                            {session.presentStudents ?? "—"}
-                                        </td>
-                                        <td className="px-6 py-4 text-center font-semibold text-red-600">
-                                            {session.absentStudents ?? "—"}
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <Badge status={session.status} />
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex justify-center gap-2 flex-wrap">
-                                                <RoleGuard roles={["admin", "faculty"]}>
-                                                    {
-                                                        canStart &&
-                                                        <button
-                                                            onClick={() => onStart(session)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 transition"
-                                                        >
-                                                            <FaPlay className="text-[10px]" />
-                                                            Start
-                                                        </button>
-                                                    }
-                                                    {
-                                                        canEnd &&
-                                                        <button
-                                                            onClick={() => onComplete(session)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 transition"
-                                                        >
-                                                            <FaStop className="text-[10px]" />
-                                                            End
-                                                        </button>
-                                                    }
-                                                </RoleGuard>
-                                                <RoleGuard roles={["admin"]}>
-                                                    {
-                                                        canReopen &&
-                                                        <button
-                                                            onClick={() => onReopen(session)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-semibold bg-amber-600 hover:bg-amber-700 transition"
-                                                        >
-                                                            <FaRedo className="text-[10px]" />
-                                                            Reopen
-                                                        </button>
-                                                    }
-                                                    <ActionButtons
-                                                        onEdit={() => onEdit(session)}
-                                                        onDelete={() => onDelete(session)}
-                                                    />
-                                                </RoleGuard>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                );
-
-                            })
-                        }
+                    <tbody className="divide-y divide-slate-100">
+                        {safeSessions.map((s) => (
+                            <tr key={s?._id || Math.random()} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="!pl-8 pr-6 py-4 font-bold text-slate-900 text-sm whitespace-nowrap">
+                                    {s?.subject?.name || "N/A"}
+                                </td>
+                                <td className="px-6 py-4 text-slate-700 text-sm">{facultyMap[s.faculty] || s.faculty || "—"}</td>
+                                <td className="px-6 py-4 text-slate-600 text-sm">{s?.date || "—"}</td>
+                                <td className="px-6 py-4 text-center text-slate-700 text-sm">{s?.expectedStudents ?? "—"}</td>
+                                <td className="px-6 py-4 text-center text-emerald-600 font-medium text-sm">{s?.presentStudents ?? "—"}</td>
+                                <td className="px-6 py-4 text-center text-red-600 font-medium text-sm">{s?.absentStudents ?? "—"}</td>
+                                <td className="px-6 py-4 text-center">
+                                    <Badge status={s?.status} />
+                                </td>
+                                <td className="px-6 py-4">
+                                    {/* Simplified Actions: grouped without heavy borders or icons */}
+                                    <div className="flex justify-center items-center gap-4 text-slate-400">
+                                        {s?.status === "SCHEDULED" && (
+                                            <button onClick={() => onStart(s)} title="Start" className="hover:text-emerald-600 transition"><FaPlay size={14}/></button>
+                                        )}
+                                        {s?.status === "ACTIVE" && (
+                                            <button onClick={() => onComplete(s)} title="End" className="hover:text-rose-600 transition"><FaFlagCheckered size={14}/></button>
+                                        )}
+                                        {s?.status === "ENDED" && (
+                                            <button onClick={() => onReopen(s)} title="Reopen" className="hover:text-amber-600 transition"><FaSyncAlt size={14}/></button>
+                                        )}
+                                        <button onClick={() => onEdit(s)} title="Edit" className="hover:text-indigo-600 transition"><FaEdit size={14}/></button>
+                                        <button onClick={() => onDelete(s)} title="Delete" className="hover:text-rose-600 transition"><FaTrash size={14}/></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
-
                 </table>
-
             </div>
-
-            <Pagination
-                page={page}
-                totalPages={totalPages}
-                total={total}
-                pageSize={pageSize}
-                onPageChange={setPage}
-            />
-
         </div>
-
     );
-
 };
 
 export default SessionTable;
