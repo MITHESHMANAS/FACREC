@@ -1,132 +1,155 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect } from "react";
 import { FaUser, FaIdCard, FaEnvelope } from "react-icons/fa";
 
-import FormInput from "./ui/FormInput";
-import FormSelect from "./ui/FormSelect";
-import Button from "./ui/Button";
-
-const StudentForm = ({
-    onSubmit,
-    loading,
-    initialData = null
-}) => {
-
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors }
-    } = useForm();
+const StudentForm = ({ initialData, onSubmit, loading }) => {
+    const [formData, setFormData] = useState({
+        name: "",
+        rollNo: "",
+        email: "",
+        branch: "CSE",
+        semester: "1",
+        isActive: true,
+    });
 
     useEffect(() => {
-
         if (initialData) {
-
-            reset({
-                name: initialData.name,
-                rollNo: initialData.rollNo,
-                email: initialData.email,
-                branch: initialData.branch,
-                semester: initialData.semester
+            setFormData({
+                name: initialData.name || "",
+                rollNo: initialData.rollNo || "",
+                email: initialData.email || "",
+                branch: initialData.branch || "CSE",
+                semester: initialData.semester ? String(initialData.semester) : "1",
+                isActive: initialData.isActive ?? true,
             });
-
-        } else {
-
-            reset({
-                name: "",
-                rollNo: "",
-                email: "",
-                branch: "CSE",
-                semester: 1
-            });
-
         }
+    }, [initialData]);
 
-    }, [initialData, reset]);
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
-    const submit = (data) => {
-        onSubmit(data);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(formData);
     };
 
     return (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-sm text-slate-700 p-1">
+            
+            {/* Section Header */}
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-normal mb-1">
+                Personal Information
+            </div>
 
-        <form onSubmit={handleSubmit(submit)} className="space-y-6">
-
-            <div>
-
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    Personal Information
-                </p>
-
-                <div className="space-y-4">
-
-                    <FormInput
-                        label="Name"
-                        icon={FaUser}
+            {/* Name Input */}
+            <div className="flex flex-col gap-1.5">
+                <label className="font-semibold text-slate-600">Name</label>
+                <div className="relative w-full">
+                    <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                    <input
+                        type="text"
+                        name="name"
+                        required
+                        disabled={loading}
+                        value={formData.name}
+                        onChange={handleChange}
                         placeholder="Full name"
-                        error={errors.name?.message}
-                        {...register("name", { required: "Name is required" })}
+                        className="w-full h-10 border border-slate-200 rounded-xl !pl-11 pr-4 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition"
                     />
+                </div>
+            </div>
 
-                    <FormInput
-                        label="Roll No"
-                        icon={FaIdCard}
-                        placeholder="e.g. 21CSE045"
-                        error={errors.rollNo?.message}
-                        {...register("rollNo", { required: "Roll Number is required" })}
+            {/* Roll No Input */}
+            <div className="flex flex-col gap-1.5">
+                <label className="font-semibold text-slate-600">Roll No</label>
+                <div className="relative w-full">
+                    <FaIdCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                    <input
+                        type="text"
+                        name="rollNo"
+                        required
+                        disabled={loading}
+                        value={formData.rollNo}
+                        onChange={handleChange}
+                        placeholder="e.g., 21CSE045"
+                        className="w-full h-10 border border-slate-200 rounded-xl !pl-11 pr-4 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition"
                     />
+                </div>
+            </div>
 
-                    <FormInput
-                        label="Email"
+            {/* Email Input */}
+            <div className="flex flex-col gap-1.5">
+                <label className="font-semibold text-slate-600">Email</label>
+                <div className="relative w-full">
+                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                    <input
                         type="email"
-                        icon={FaEnvelope}
+                        name="email"
+                        required
+                        disabled={loading}
+                        value={formData.email}
+                        onChange={handleChange}
                         placeholder="student@college.edu"
-                        error={errors.email?.message}
-                        {...register("email", { required: "Email is required" })}
+                        className="w-full h-10 border border-slate-200 rounded-xl !pl-11 pr-4 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition"
                     />
-
                 </div>
-
             </div>
 
-            <div className="pt-5 border-t border-slate-100">
+            {/* Section Header */}
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-normal mt-2 mb-1">
+                Academic Details
+            </div>
 
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    Academic Details
-                </p>
+            {/* Branch and Semester Row */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                    <label className="font-semibold text-slate-600">Branch</label>
+                    <select
+                        name="branch"
+                        disabled={loading}
+                        value={formData.branch}
+                        onChange={handleChange}
+                        className="w-full h-10 px-3 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-50 transition"
+                    >
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="EE">EE</option>
+                        <option value="ME">ME</option>
+                        <option value="CE">CE</option>
+                    </select>
+                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-
-                    <FormSelect label="Branch" {...register("branch")}>
-                        <option>CSE</option>
-                        <option>ECE</option>
-                        <option>ME</option>
-                        <option>CE</option>
-                    </FormSelect>
-
-                    <FormSelect label="Semester" {...register("semester")}>
+                <div className="flex flex-col gap-1.5">
+                    <label className="font-semibold text-slate-600">Semester</label>
+                    <select
+                        name="semester"
+                        disabled={loading}
+                        value={formData.semester}
+                        onChange={handleChange}
+                        className="w-full h-10 px-3 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-50 transition"
+                    >
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                            <option key={sem} value={sem}>{sem}</option>
+                            <option key={sem} value={String(sem)}>
+                                {sem}
+                            </option>
                         ))}
-                    </FormSelect>
-
+                    </select>
                 </div>
-
             </div>
 
-            <Button type="submit" loading={loading} className="w-full" size="lg">
-                {
-                    loading
-                        ? (initialData ? "Updating..." : "Adding...")
-                        : (initialData ? "Update Student" : "Add Student")
-                }
-            </Button>
-
+            {/* Action Footer Button Group */}
+            <div className="flex justify-end gap-3 pt-4 mt-3 border-t border-slate-100">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="h-10 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition disabled:opacity-50 flex items-center justify-center"
+                >
+                    {loading ? "Saving..." : initialData ? "Save Changes" : "Add Student"}
+                </button>
+            </div>
         </form>
-
     );
-
 };
 
 export default StudentForm;
