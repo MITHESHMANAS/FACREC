@@ -1,38 +1,22 @@
-# Python
-__pycache__/
-*.pyc
-
-# Database
-*.db
-attendance.db
-
-# Face Dataset
-face_dataset/
-
-# Reports
-reports/
-
-# VS Code
-.vscode/
-
-# Logs
-*.log
-
-# Environment
-.env
-server/.env
-
-# Node
 node_modules/
 client/node_modules/
 server/node_modules/
 
-# Build
+__pycache__/
+*.pyc
+
+.env
+server/.env
+
+server/reports/
+reports/
+
+attendance.db
+
 dist/
 build/
 coverage/
-client/dist/
-server/dist/
 
-# ZIP backups
-*.zip
+.vscode/
+
+face_dataset/*.npy
