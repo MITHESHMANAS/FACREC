@@ -97,7 +97,20 @@ const Faculty = () => {
     };
 
     const totalFaculty = facultyList.length;
-    const uniqueDepts = Array.from(new Set(facultyList.map(f => f.department).filter(Boolean)));
+
+    // Normalizes naming patterns to avoid casing duplication duplicates
+    const uniqueDepts = Array.from(
+        new Set(
+            facultyList
+                .map(f => f.department?.trim())
+                .filter(Boolean)
+                .map(d => d.toLowerCase())
+        )
+    ).map(lowerDept => {
+        const match = facultyList.find(f => f.department?.toLowerCase() === lowerDept);
+        return match ? match.department : lowerDept;
+    });
+
     const totalBranches = uniqueDepts.length;
 
     const filteredFaculty = facultyList.filter((fac) => {
@@ -112,7 +125,9 @@ const Faculty = () => {
             statusFilter === "all" ||
             (statusFilter === "active" ? fac.isActive : !fac.isActive);
 
-        const matchesDept = deptFilter === "all" || fac.department === deptFilter;
+        const matchesDept = 
+            deptFilter === "all" || 
+            fac.department?.toLowerCase() === deptFilter.toLowerCase();
 
         return matchesSearch && matchesStatus && matchesDept;
     });
@@ -121,7 +136,7 @@ const Faculty = () => {
         <AppLayout>
             <div className="flex flex-col gap-6 max-w-[1400px] mx-auto px-4 py-2">
                 
-                {/* 1. Page Header Strip */}
+                {/* Heading Area Block */}
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900">Faculty</h1>
@@ -144,7 +159,7 @@ const Faculty = () => {
                     </RoleGuard>
                 </div>
 
-                {/* 2. Workspace Balanced Filter Toolbar */}
+                {/* Filter Toolbar */}
                 <div className="flex flex-wrap items-center justify-between gap-3 bg-white px-4 py-2.5 border border-slate-100 rounded-2xl shadow-sm">
                     <div className="flex flex-wrap items-center gap-2 flex-1">
                         <SearchBar
@@ -188,7 +203,7 @@ const Faculty = () => {
                     </button>
                 </div>
 
-                {/* 3. Metrics Row Cards */}
+                {/* KPI Overview Block */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <KpiCard
                         index={0}
@@ -206,7 +221,7 @@ const Faculty = () => {
                     />
                 </div>
 
-                {/* 4. Scroll Container and Table Box */}
+                {/* Scroll Box Container */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         {loading ? (
@@ -222,10 +237,9 @@ const Faculty = () => {
                         )}
                     </div>
                 </div>
-
             </div>
 
-            {/* Application Modals */}
+            {/* Modal Components */}
             <Modal
                 isOpen={open}
                 title={editingFaculty ? "Edit Faculty Profile" : "Create Faculty Account"}

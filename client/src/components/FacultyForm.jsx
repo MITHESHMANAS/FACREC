@@ -46,7 +46,7 @@ const FacultyForm = ({ initialData, onSubmit, loading }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-sm text-slate-700">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-sm text-slate-700 p-1">
             <div className="flex flex-col gap-1.5">
                 <label className="font-semibold text-slate-600">Employee ID</label>
                 <input
@@ -119,7 +119,7 @@ const FacultyForm = ({ initialData, onSubmit, loading }) => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 py-2">
+            <div className="flex items-center gap-2 py-1">
                 <input
                     type="checkbox"
                     id="isActive"
@@ -134,11 +134,12 @@ const FacultyForm = ({ initialData, onSubmit, loading }) => {
                 </label>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            {/* Resolved clipping overflow by using items-center and cleaning vertical margin boundaries */}
+            <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-slate-100">
                 <button
                     type="submit"
                     disabled={loading}
-                    className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition disabled:opacity-50"
+                    className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition disabled:opacity-50 flex items-center justify-center"
                 >
                     {loading ? "Saving..." : initialData ? "Update Account" : "Register Faculty"}
                 </button>
