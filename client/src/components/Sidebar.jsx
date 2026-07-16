@@ -14,7 +14,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
             initial={false}
             animate={{ width: collapsed ? 84 : 272 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="relative flex h-screen flex-col bg-[#0B1120] text-white shadow-2xl overflow-hidden"
+            // ⭐ ONE CHANGE: pl-6 on the sidebar itself
+            className="relative flex h-screen flex-col bg-[#0B1120] text-white shadow-2xl overflow-hidden pl-6"
         >
             {/* Collapse Toggle Button */}
             <button
@@ -29,8 +30,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 </motion.div>
             </button>
 
-            {/* Logo Section – left aligned with huge left padding */}
-            <div className="pl-24 pr-6 py-6 border-b border-slate-800/80">
+            {/* Logo – REMOVED pl-24, just pr-6 */}
+            <div className="pr-6 py-6 border-b border-slate-800/80">
                 {!collapsed && (
                     <>
                         <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">
@@ -43,12 +44,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 )}
             </div>
 
-            {/* Navigation – evenly stretched, left-aligned with huge left padding */}
+            {/* Navigation – unchanged vertical distribution */}
             <nav className="flex-1 overflow-y-auto px-0 py-6 flex flex-col justify-evenly">
                 {groups.map((group) => (
                     <div key={group.label} className="flex flex-col">
                         {!collapsed && (
-                            <p className="pl-24 pr-6 mb-6 text-[12px] font-bold uppercase tracking-[0.2em] text-slate-500/80">
+                            // Section title – REMOVED pl-24
+                            <p className="pr-6 mb-6 text-[12px] font-bold uppercase tracking-[0.2em] text-slate-500/80">
                                 {group.label}
                             </p>
                         )}
@@ -59,7 +61,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
                                     to={item.path}
                                     end={item.path === "/"}
                                     className={({ isActive }) =>
-                                        `relative flex items-center gap-4 pl-24 pr-6 py-6 text-sm transition-all duration-200 w-full ${
+                                        // REMOVED pl-24, kept all other classes
+                                        `relative flex items-center gap-4 pr-6 py-6 text-sm transition-all duration-200 w-full ${
                                             isActive
                                                 ? "text-white bg-slate-800/60"
                                                 : "text-slate-400 hover:text-white hover:bg-slate-800/30"
@@ -68,7 +71,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                                 >
                                     {({ isActive }) => (
                                         <>
-                                            {/* Active left accent bar – flush left */}
+                                            {/* Active indicator – stays at left-0 */}
                                             {isActive && (
                                                 <motion.div
                                                     layoutId="activeBar"
@@ -92,8 +95,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 ))}
             </nav>
 
-            {/* Footer – left-aligned with huge left padding */}
-            <div className="shrink-0 p-6 border-t border-slate-800/80 bg-[#0B1120]">
+            {/* Footer – REMOVED pl-24 */}
+            <div className="shrink-0 pr-6 py-6 border-t border-slate-800/80 bg-[#0B1120]">
                 {!collapsed && (
                     <div className="mb-6 flex items-center gap-3 rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-800/20 p-4 backdrop-blur-sm border border-slate-700/30 shadow-lg">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-bold shadow-lg shadow-indigo-500/30">

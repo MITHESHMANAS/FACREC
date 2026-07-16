@@ -55,7 +55,6 @@ const Attendance = () => {
         try {
             const [sessionData, facultyData] = await Promise.all([getSessions(), getFaculty()]);
             
-            // Build Faculty Map for name resolution
             const fList = Array.isArray(facultyData) ? facultyData : (facultyData?.faculty || []);
             const fMap = {};
             fList.forEach(f => { if (f._id) fMap[f._id] = f.name; });
@@ -110,10 +109,7 @@ const Attendance = () => {
 
     return (
         <AppLayout>
-            {/* Wrapper with gap-y-6 forces separation between ALL sections */}
             <div className="flex flex-col gap-y-6">
-
-                {/* Header Section */}
                 <div className="flex justify-between items-center flex-wrap gap-4">
                     <h1 className="text-3xl font-semibold tracking-tight text-slate-800">Attendance</h1>
                     <RoleGuard roles={["admin", "faculty"]}>
@@ -126,7 +122,6 @@ const Attendance = () => {
                     </RoleGuard>
                 </div>
 
-                {/* Filter Section - Increased Width */}
                 <div className="w-full max-w-lg">
                     <FormSelect label="Showing attendance for" icon={FaFilter} value={sessionFilter ?? ""} onChange={(e) => setSessionFilter(e.target.value)}>
                         <option value="">All Sessions (history)</option>
@@ -138,7 +133,6 @@ const Attendance = () => {
                     </FormSelect>
                 </div>
 
-                {/* KPIs */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <KpiCard index={0} title="Records" value={attendance.length} icon={FaClipboardList} tone="indigo" />
                     <KpiCard index={1} title="Present" value={attendance.filter(a => a.status === "Present").length} icon={FaUserCheck} tone="emerald" />
@@ -146,7 +140,6 @@ const Attendance = () => {
                     <KpiCard index={3} title="Students" value={new Set(attendance.map(a => a.student?._id)).size} icon={FaUserGraduate} tone="amber" />
                 </div>
 
-                {/* Active Session Status */}
                 {activeSession ? (
                     <Card accent="border-l-emerald-500">
                         <div className="flex justify-between items-center flex-wrap gap-4">
@@ -156,7 +149,10 @@ const Attendance = () => {
                                 </h2>
                                 <div className="mt-3 space-y-1 text-sm text-slate-600">
                                     <p><span className="font-semibold text-slate-800">Subject:</span> {activeSession.subject?.name}</p>
-                                    <p><span className="font-semibold text-slate-800">Faculty:</span> {activeSession.faculty}</p>
+                                    <p>
+                                        <span className="font-semibold text-slate-800">Faculty:</span>{" "}
+                                        {facultyMap[activeSession.faculty] || activeSession.faculty || "—"}
+                                    </p>
                                     <p><span className="font-semibold text-slate-800">Semester:</span> {activeSession.semester}</p>
                                     <p><span className="font-semibold text-slate-800">Branch:</span> {activeSession.branch}</p>
                                 </div>
@@ -171,7 +167,6 @@ const Attendance = () => {
                     </Card>
                 )}
 
-                {/* Recognition Results */}
                 {recognizedStudents.length > 0 && (
                     <Card>
                         <h2 className="text-lg font-bold text-slate-800 mb-4">Recognition Results</h2>
@@ -189,7 +184,6 @@ const Attendance = () => {
                     </Card>
                 )}
 
-                {/* Search Bar */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by student, roll no or subject..." />
                     <button onClick={() => loadAttendance(sessionFilter)} className="inline-flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-[14px] text-sm font-semibold transition-all">
@@ -197,7 +191,6 @@ const Attendance = () => {
                     </button>
                 </div>
 
-                {/* Table */}
                 {loading ? <TableSkeleton rows={6} columns={6} /> : (
                     <AttendanceTable 
                         attendance={filteredAttendance} 

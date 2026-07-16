@@ -10,20 +10,17 @@ const AppLayout = ({ children }) => {
     const location = useLocation();
 
     return (
-        // 1️⃣ Outer container: full viewport height, no scrolling here
-        <div className="flex h-screen w-full overflow-hidden bg-slate-50">
-            {/* Sidebar – flex child, stretches to full height */}
+        // ⭐ p-4 gives outer margin, gap-6 separates sidebar & content
+        <div className="flex h-screen bg-slate-100 p-4 gap-6 overflow-hidden">
             <Sidebar
                 collapsed={collapsed}
                 onToggle={() => setCollapsed((c) => !c)}
             />
 
-            {/* Right panel: takes remaining width, prevents overflow */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-                {/* Navbar – stays fixed at top (not scrollable) */}
+            {/* Main panel – becomes a floating card */}
+            <div className="flex flex-1 flex-col overflow-hidden rounded-3xl bg-white shadow-sm">
                 <Navbar />
 
-                {/* 2️⃣ Only this main content scrolls */}
                 <main className="flex-1 overflow-y-auto p-6 lg:p-8">
                     <div className="mx-auto w-full max-w-[1500px]">
                         <AnimatePresence mode="wait">
@@ -31,10 +28,7 @@ const AppLayout = ({ children }) => {
                                 key={location.pathname}
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    duration: 0.2,
-                                    ease: "easeOut",
-                                }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
                             >
                                 {children}
                             </motion.div>

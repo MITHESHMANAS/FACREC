@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import CardSkeleton from "../components/ui/CardSkeleton";
-
 import AppLayout from "../layouts/AppLayout";
-
 import {
     FaClipboardList,
     FaCheckCircle,
@@ -21,29 +19,53 @@ import AttendanceHistory from "../components/AttendanceHistory";
 import RecognitionTimeline from "../components/RecognitionTimeline";
 
 import { getStudentProfile } from "../services/studentProfileService";
+import api from "../services/api"; // adjust to your axios instance
 
 const StudentProfile = () => {
     const { id } = useParams();
 
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [facultyMap, setFacultyMap] = useState({});
 
     const loadProfile = async () => {
         try {
             const data = await getStudentProfile(id);
             setProfile(data.profile);
         } catch (err) {
-            toast.error(
-                err.response?.data?.message ||
-                "Unable to load profile"
-            );
+            toast.error(err.response?.data?.message || "Unable to load profile");
         } finally {
             setLoading(false);
         }
     };
 
+    // Fetch all faculty and build a map: _id → name
+    const loadFacultyMap = async () => {
+        try {
+            const res = await api.get("/faculty"); // adjust endpoint if needed
+            // Handle different response shapes: { data: [...] } or just [...]
+            const facultyList = res.data?.data || res.data || [];
+            if (!Array.isArray(facultyList)) {
+                console.warn("Faculty list is not an array:", facultyList);
+                return;
+            }
+            const map = {};
+            facultyList.forEach(f => {
+                if (f._id && f.name) {
+                    map[f._id] = f.name;
+                }
+            });
+            setFacultyMap(map);
+            console.log("✅ Faculty map built with", Object.keys(map).length, "entries");
+        } catch (err) {
+            console.error("Could not load faculty list:", err);
+            // Don't show toast to avoid annoying user – fallback to IDs
+        }
+    };
+
     useEffect(() => {
         loadProfile();
+        loadFacultyMap();
     }, [id]);
 
     if (loading) {
@@ -65,13 +87,9 @@ const StudentProfile = () => {
 
     return (
         <AppLayout>
-            {/* Unified container block enforcing clean structural gaps */}
             <div className="flex flex-col gap-6 max-w-[1400px] mx-auto px-4 py-2">
-                
-                {/* 1. Core Profile Header Strip */}
                 <ProfileHeader student={profile.student} />
 
-                {/* 2. Symmetrical Metrics Grid Layer */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <KpiCard
                         index={0}
@@ -103,23 +121,18 @@ const StudentProfile = () => {
                     />
                 </div>
 
-                {/* 3. Full-Width Attendance Health Dashboard Area (Circle chart removed) */}
                 <div className="w-full">
                     <AttendanceHealth attendance={profile.attendance} />
                 </div>
 
-                {/* 4. Enrolled Curricular Academic Tags */}
                 <EnrolledSubjects subjects={profile.enrolledSubjects} />
 
-                {/* 5. Subject Wise Performance Progress Bars */}
                 <SubjectPerformance subjects={profile.subjects} />
 
-                {/* 6. Lower Activity & Authentication logs */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                    <AttendanceHistory history={profile.history} />
+                    <AttendanceHistory history={profile.history} facultyMap={facultyMap} />
                     <RecognitionTimeline history={profile.history} />
                 </div>
-
             </div>
         </AppLayout>
     );
