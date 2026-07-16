@@ -29,9 +29,10 @@ const QuickActions = () => {
             onClick: () => navigate("/sessions")
         },
         {
-            label: "View Analytics",
+            label: "All Reports",
             icon: <FaChartBar />,
-            onClick: () => navigate("/analytics")
+            // Updated path to /reports
+            onClick: () => navigate("/reports")
         }
     ];
 
@@ -42,9 +43,10 @@ const QuickActions = () => {
             onClick: () => navigate("/sessions")
         },
         {
-            label: "View Analytics",
+            label: "All Reports",
             icon: <FaChartBar />,
-            onClick: () => navigate("/analytics")
+            // Updated path to /reports
+            onClick: () => navigate("/reports")
         }
     ];
 
