@@ -57,6 +57,8 @@ const NAV_GROUPS = {
         {
             label: "Attendance",
             items: [
+                // Added Sessions for Faculty access
+                { name: "Sessions", icon: FaCalendarAlt, path: "/sessions" }, 
                 { name: "Attendance", icon: FaClipboardCheck, path: "/attendance" },
                 { name: "Recognition History", icon: FaHistory, path: "/recognition-history" }
             ]

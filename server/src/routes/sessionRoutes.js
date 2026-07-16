@@ -1,12 +1,10 @@
 const express = require("express");
-
 const router = express.Router();
-
 const controller = require("../controllers/sessionController");
-
 const protect = require("../middleware/authMiddleware");
 const authorize = require("../middleware/roleMiddleware");
 
+// Admin only: Create sessions
 router.post(
     "/",
     protect,
@@ -14,6 +12,7 @@ router.post(
     controller.createSession
 );
 
+// Both Admin and Faculty: View sessions
 router.get(
     "/",
     protect,
@@ -21,6 +20,7 @@ router.get(
     controller.getSessions
 );
 
+// Admin only: Edit/Delete sessions
 router.put(
     "/:id",
     protect,
@@ -35,6 +35,7 @@ router.delete(
     controller.deleteSession
 );
 
+// Both Admin and Faculty: Manage lifecycle
 router.patch(
     "/:id/start",
     protect,
@@ -49,10 +50,11 @@ router.patch(
     controller.completeSession
 );
 
+// UPDATED: Now allows faculty to reopen sessions
 router.patch(
     "/:id/reopen",
     protect,
-    authorize("admin"),
+    authorize("admin", "faculty"), 
     controller.reopenSession
 );
 

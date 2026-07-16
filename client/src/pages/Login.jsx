@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaBolt, FaUserShield, FaChartLine, FaCamera } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -71,7 +71,7 @@ const Login = () => {
 
         <div className="min-h-screen flex bg-slate-50">
 
-            <Toaster position="top-right" />
+            
 
             {/* Left - branding */}
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white flex-col justify-between p-12">

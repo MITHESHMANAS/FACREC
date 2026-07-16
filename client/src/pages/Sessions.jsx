@@ -40,7 +40,6 @@ const Sessions = () => {
 
     useEffect(() => { loadData(); }, []);
 
-    // Action handler to fix the "not a function" error
     const handleAction = async (actionFn, id, successMsg) => {
         try {
             await actionFn(id);
@@ -49,73 +48,80 @@ const Sessions = () => {
         } catch (err) { toast.error(err.response?.data?.message || "Operation failed"); }
     };
 
-    const filteredSessions = useMemo(() => sessions.filter(s => {
+    const filteredSessions = useMemo(() => {
+        let list = sessions;
+
+        if (user?.role === 'faculty') {
+            const userId = String(user.id || user._id || "").trim();
+            const userName = String(user.name || "").toLowerCase().trim();
+
+            list = list.filter(s => {
+                const sessionFacultyId = String(s.faculty || "").trim();
+                const facultyNameFromMap = String(facultyMap[sessionFacultyId] || "").toLowerCase().trim();
+                
+                // MATCHING LOGIC:
+                // 1. Matches by exact ID
+                // 2. Matches by Faculty Name lookup
+                // 3. Matches if the raw faculty field string contains the user's name
+                return sessionFacultyId === userId || 
+                       facultyNameFromMap === userName || 
+                       (s.faculty && String(s.faculty).toLowerCase().includes(userName));
+            });
+        }
+
         const text = search.toLowerCase();
-        return s.subject?.name?.toLowerCase().includes(text) || (facultyMap[s.faculty] || s.faculty || "").toLowerCase().includes(text);
-    }), [sessions, search, facultyMap]);
+        return list.filter(s => 
+            s.subject?.name?.toLowerCase().includes(text) || 
+            (facultyMap[s.faculty] || s.faculty || "").toLowerCase().includes(text)
+        );
+    }, [sessions, search, facultyMap, user]);
 
     return (
         <AppLayout>
-            {/* FIX: pl-8 ensures content never hits the left edge sidebar area */}
             <div className="pl-8 pr-8 py-8 flex flex-col gap-8 max-w-[1400px] mx-auto">
-                
-                {/* Header */}
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900">Sessions</h1>
                         <p className="mt-1 text-sm text-slate-500">Manage, track, and update session status.</p>
                     </div>
-
                     <RoleGuard roles={["admin"]}>
-                        <button
-                            onClick={() => { setEditingSession(null); setOpen(true); }}
-                            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-11 rounded-xl text-xs font-bold shadow-sm transition-all hover:scale-[1.02]"
-                        >
+                        <button onClick={() => { setEditingSession(null); setOpen(true); }} className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-11 rounded-xl text-xs font-bold shadow-sm transition-all">
                             <FaPlus className="text-[10px]" /> Add Session
                         </button>
                     </RoleGuard>
                 </div>
 
-                {/* KPIs */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <KpiCard title="Today's" value={sessions.filter(s => s.date === new Date().toISOString().split("T")[0]).length} icon={FaCalendarAlt} tone="indigo" />
-                    <KpiCard title="Active" value={sessions.filter(s => s.status === "ACTIVE").length} icon={FaPlay} tone="emerald" />
-                    <KpiCard title="Completed" value={sessions.filter(s => s.status === "ENDED").length} icon={FaFlagCheckered} tone="blue" />
-                    <KpiCard title="Upcoming" value={sessions.filter(s => s.status === "SCHEDULED").length} icon={FaClock} tone="amber" />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <KpiCard title="Today's" value={filteredSessions.filter(s => s.date === new Date().toISOString().split("T")[0]).length} icon={FaCalendarAlt} tone="indigo" />
+                    <KpiCard title="Active" value={filteredSessions.filter(s => s.status === "ACTIVE").length} icon={FaPlay} tone="emerald" />
+                    <KpiCard title="Completed" value={filteredSessions.filter(s => s.status === "ENDED").length} icon={FaFlagCheckered} tone="blue" />
+                    <KpiCard title="Upcoming" value={filteredSessions.filter(s => s.status === "SCHEDULED").length} icon={FaClock} tone="amber" />
                 </div>
 
-                {/* Filter Toolbar */}
-                <div className="flex items-center gap-4 bg-white px-5 py-4 border border-slate-100 rounded-2xl shadow-sm">
-                    <SearchBar className="max-w-[480px] flex-1" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by subject or faculty..." />
-                    <button onClick={loadData} className="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition">
-                        <FaSyncAlt className={loading ? "animate-spin" : ""} />
-                    </button>
-                </div>
-
-                {/* Table */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        {loading ? <TableSkeleton rows={5} columns={4} /> : (
-                            <SessionTable 
-                                sessions={filteredSessions} 
-                                facultyMap={facultyMap} 
-                                onEdit={(s) => { setEditingSession(s); setOpen(true); }} 
-                                onDelete={(s) => handleAction(deleteSession, s._id, "Session Deleted")}
-                                onStart={(s) => handleAction(startSession, s._id, "Session Started")}
-                                onComplete={(s) => handleAction(completeSession, s._id, "Session Ended")}
-                                onReopen={(s) => handleAction(reopenSession, s._id, "Session Reopened")}
-                            />
-                        )}
-                    </div>
+                    {loading ? <TableSkeleton rows={5} columns={4} /> : (
+                        <SessionTable 
+                            sessions={filteredSessions} 
+                            facultyMap={facultyMap}
+                            userRole={user?.role}
+                            onEdit={(s) => { setEditingSession(s); setOpen(true); }} 
+                            onDelete={(s) => handleAction(deleteSession, s._id, "Session Deleted")}
+                            onStart={(s) => handleAction(startSession, s._id, "Session Started")}
+                            onComplete={(s) => handleAction(completeSession, s._id, "Session Ended")}
+                            onReopen={(s) => handleAction(reopenSession, s._id, "Session Reopened")}
+                        />
+                    )}
                 </div>
             </div>
 
-            <Modal isOpen={open} title={editingSession ? "Edit Session" : "Create Session"} onClose={() => { setEditingSession(null); setOpen(false); }}>
-                <SessionForm initialData={editingSession} onSubmit={async (data) => {
-                    editingSession ? await updateSession(editingSession._id, data) : await createSession(data);
-                    setOpen(false); loadData();
-                }} />
-            </Modal>
+            <RoleGuard roles={["admin"]}>
+                <Modal isOpen={open} title={editingSession ? "Edit Session" : "Create Session"} onClose={() => { setEditingSession(null); setOpen(false); }}>
+                    <SessionForm initialData={editingSession} onSubmit={async (data) => {
+                        editingSession ? await updateSession(editingSession._id, data) : await createSession(data);
+                        setOpen(false); loadData();
+                    }} />
+                </Modal>
+            </RoleGuard>
         </AppLayout>
     );
 };

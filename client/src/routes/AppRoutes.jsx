@@ -19,12 +19,8 @@ const AppRoutes = () => {
     return (
         <BrowserRouter>
             <Routes>
-
                 {/* Public Route */}
-                <Route
-                    path="/login"
-                    element={<Login />}
-                />
+                <Route path="/login" element={<Login />} />
 
                 {/* Dashboard */}
                 <Route
@@ -95,11 +91,11 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Sessions */}
+                {/* Sessions - Updated to allow both admin and faculty */}
                 <Route
                     path="/sessions"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute roles={["admin", "faculty"]}>
                             <Sessions />
                         </ProtectedRoute>
                     }
@@ -134,7 +130,6 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
-
             </Routes>
         </BrowserRouter>
     );
