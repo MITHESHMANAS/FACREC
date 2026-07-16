@@ -281,13 +281,15 @@ npm run seed
 
 ### Default Login Accounts
 
-┌───────────────────────────────────────────────────────────────────────────┐
-│  ROLE            │  EMAIL                       │  PASSWORD               │
-├──────────────────┼─────────────────────────────┼──────────────────────────┤
-│  Administrator   │  admin@facrec.edu           │  Facrec@123              │
-│  Faculty         │  ananya.rao@facrec.edu      │  Facrec@123              │
-│  Faculty         │  vikram.shah@facrec.edu     │  Facrec@123              │
-└──────────────────┴─────────────────────────────┴──────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│  DEFAULT LOGIN ACCOUNTS                                                            │
+├───────────────────────────────┬─────────────────────────────┬──────────────────────┤
+│  ROLE                         │  EMAIL                      │  PASSWORD            │
+├───────────────────────────────┼─────────────────────────────┼──────────────────────┤
+│  Administrator                │  admin@facrec.edu          │  Facrec@123         │
+│  Faculty                      │  ananya.rao@facrec.edu     │  Facrec@123         │
+│  Faculty                      │  vikram.shah@facrec.edu    │  Facrec@123         │
+└───────────────────────────────┴─────────────────────────────┴──────────────────────┘
 ### Start Backend
 
 ```bash
@@ -308,14 +310,16 @@ npm run dev
 
 ## Documentation
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│   ARCHITECTURE.md          – Overall system architecture and request flow       │
-│   API_DOCS.md              – REST API documentation                             │
-│   ER_DIAGRAM.md            – Database schema and relationships                  │
-│   SEQUENCE_DIAGRAM.md      – Recognition and attendance workflow                │
-│   DEPLOYMENT.md            – Installation and deployment guide                  │
-│   VISION_INTEGRATION.md    – Python vision module integration                   │
-└─────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│  DOCUMENTATION                                                                     │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│   ARCHITECTURE.md      – Overall system architecture and request flow            │
+│   API_DOCS.md          – REST API documentation                                  │
+│   ER_DIAGRAM.md        – Database schema and relationships                       │
+│   SEQUENCE_DIAGRAM.md  – Recognition and attendance workflow                     │
+│   DEPLOYMENT.md        – Installation and deployment guide                       │
+│   VISION_INTEGRATION.md – Python vision module integration                       │
+└─────────────────────────────────────────────────────────────────────────────────────┘
 
 ## Key Functionalities
 
