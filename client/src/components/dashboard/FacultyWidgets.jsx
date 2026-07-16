@@ -41,5 +41,4 @@ const FacultyWidgets = ({ stats }) => {
         </div>
     );
 };
-
 export default FacultyWidgets;
