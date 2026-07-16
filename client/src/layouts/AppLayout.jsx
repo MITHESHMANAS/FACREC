@@ -5,33 +5,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
-/**
- * The one page shell the whole app should use. Every page previously
- * hand-rolled `<div className="flex min-h-screen bg-slate-100">
- * <Sidebar /><div className="flex-1"><Navbar />...` - this is that
- * markup, once, with the sidebar's collapsed state lifted up here so
- * it doesn't reset when navigating between pages.
- */
 const AppLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
 
     return (
-        <div className="flex min-h-screen w-full bg-slate-100 overflow-x-hidden">
+        // 1️⃣ Outer container: full viewport height, no scrolling here
+        <div className="flex h-screen w-full overflow-hidden bg-slate-50">
+            {/* Sidebar – flex child, stretches to full height */}
             <Sidebar
                 collapsed={collapsed}
                 onToggle={() => setCollapsed((c) => !c)}
             />
 
-            {/* 
-              * FIXED: Added max-w-full and overflow-hidden to enforce 
-              * structural boundaries and prevent deep-nested flex items 
-              * (like the search input and user block) from stretching the page.
-              */}
-            <div className="flex flex-1 min-w-0 flex-col max-w-full overflow-hidden">
+            {/* Right panel: takes remaining width, prevents overflow */}
+            <div className="flex flex-1 flex-col overflow-hidden">
+                {/* Navbar – stays fixed at top (not scrollable) */}
                 <Navbar />
 
-                <main className="flex-1 px-8 py-8 lg:px-10 lg:py-8">
+                {/* 2️⃣ Only this main content scrolls */}
+                <main className="flex-1 overflow-y-auto p-6 lg:p-8">
                     <div className="mx-auto w-full max-w-[1500px]">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -40,7 +33,7 @@ const AppLayout = ({ children }) => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{
                                     duration: 0.2,
-                                    ease: "easeOut"
+                                    ease: "easeOut",
                                 }}
                             >
                                 {children}
