@@ -281,15 +281,11 @@ npm run seed
 
 ### Default Login Accounts
 
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│  DEFAULT LOGIN ACCOUNTS                                                            │
-├───────────────────────────────┬─────────────────────────────┬──────────────────────┤
-│  ROLE                         │  EMAIL                      │  PASSWORD            │
-├───────────────────────────────┼─────────────────────────────┼──────────────────────┤
-│  Administrator                │  admin@facrec.edu          │  Facrec@123         │
-│  Faculty                      │  ananya.rao@facrec.edu     │  Facrec@123         │
-│  Faculty                      │  vikram.shah@facrec.edu    │  Facrec@123         │
-└───────────────────────────────┴─────────────────────────────┴──────────────────────┘
+| Role | Email | Password |
+|------|-------|----------|
+| Administrator | admin@facrec.edu | Facrec@123 |
+| Faculty | ananya.rao@facrec.edu | Facrec@123 |
+| Faculty | vikram.shah@facrec.edu | Facrec@123 |
 ### Start Backend
 
 ```bash
@@ -310,16 +306,29 @@ npm run dev
 
 ## Documentation
 
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│  DOCUMENTATION                                                                     │
-├─────────────────────────────────────────────────────────────────────────────────────┤
-│   ARCHITECTURE.md      – Overall system architecture and request flow            │
-│   API_DOCS.md          – REST API documentation                                  │
-│   ER_DIAGRAM.md        – Database schema and relationships                       │
-│   SEQUENCE_DIAGRAM.md  – Recognition and attendance workflow                     │
-│   DEPLOYMENT.md        – Installation and deployment guide                       │
-│   VISION_INTEGRATION.md – Python vision module integration                       │
-└─────────────────────────────────────────────────────────────────────────────────────┘
+## DOCUMENTATION
+
+| Document | Description |
+|----------|-------------|
+| **ARCHITECTURE.md** | Overall system architecture and request flow |
+| **API_DOCS.md** | REST API documentation |
+| **ER_DIAGRAM.md** | Database schema and relationships |
+| **SEQUENCE_DIAGRAM.md** | Recognition and attendance workflow |
+| **DEPLOYMENT.md** | Installation and deployment guide |
+| **VISION_INTEGRATION.md** | Python vision module integration |
+
+---
+
+## KEY FUNCTIONALITIES
+
+- ✅ Real-Time Face Recognition Attendance
+- ✅ Automatic Attendance Recording
+- ✅ Live Session Management
+- ✅ Student & Faculty Enrollment
+- ✅ Subject & Assignment Management
+- ✅ Attendance Analytics & Reports
+- ✅ Recognition History & Audit Trail
+- ✅ System Health Monitoring
 
 ## Key Functionalities
 
