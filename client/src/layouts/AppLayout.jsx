@@ -10,29 +10,57 @@ const AppLayout = ({ children }) => {
     const location = useLocation();
 
     return (
-        // ⭐ p-4 gives outer margin, gap-6 separates sidebar & content
-        <div className="flex h-screen bg-slate-100 p-4 gap-6 overflow-hidden">
+        <div className="flex h-screen w-full overflow-hidden bg-slate-100 p-3 gap-4">
+
+            {/* Sidebar */}
             <Sidebar
                 collapsed={collapsed}
                 onToggle={() => setCollapsed((c) => !c)}
             />
 
-            {/* Main panel – becomes a floating card */}
-            <div className="flex flex-1 flex-col overflow-hidden rounded-3xl bg-white shadow-sm">
+            {/* MAIN APPLICATION AREA */}
+            <div
+                className="
+                    flex
+                    min-w-0
+                    flex-1
+                    flex-col
+                    overflow-hidden
+                    rounded-2xl
+                    bg-white
+                    shadow-sm
+                "
+            >
                 <Navbar />
 
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-                    <div className="mx-auto w-full max-w-[1500px]">
+                {/* PAGE SCROLL AREA */}
+                <main
+                    className="
+                        min-w-0
+                        flex-1
+                        overflow-x-hidden
+                        overflow-y-auto
+                        p-5
+                        lg:p-6
+                    "
+                >
+                    <div className="mx-auto w-full min-w-0 max-w-none">
+
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={location.pathname}
+                                className="min-w-0 w-full"
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                transition={{
+                                    duration: 0.2,
+                                    ease: "easeOut",
+                                }}
                             >
                                 {children}
                             </motion.div>
                         </AnimatePresence>
+
                     </div>
                 </main>
             </div>
