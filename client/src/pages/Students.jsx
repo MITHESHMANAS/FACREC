@@ -101,7 +101,7 @@ const Students = () => {
 
     const totalStudents = students.length;
     const activeStudents = students.filter(s => s.isActive).length;
-    const registeredFaces = students.filter(s => s.faceDatasetId || s.faceId || s.faceRegistered).length;
+    const registeredFaces = students.filter(s => s.faceRegistered === true).length;
     const pendingRegistration = totalStudents - registeredFaces;
     const attendanceToday = activeStudents; 
 
