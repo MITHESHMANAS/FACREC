@@ -1,6 +1,7 @@
 const Student = require("../models/Student");
 const Attendance = require("../models/Attendance");
 const Enrollment = require("../models/Enrollment");
+const { withFaceStatus } = require("../utils/faceDataset");
 
 const getStudentProfile = async (id) => {
 
@@ -102,7 +103,7 @@ const getStudentProfile = async (id) => {
 
     return {
 
-        student,
+        student: withFaceStatus(student),
 
         attendance: {
 

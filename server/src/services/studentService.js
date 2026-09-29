@@ -3,6 +3,10 @@ const Enrollment = require("../models/Enrollment");
 const Attendance = require("../models/Attendance");
 const RecognitionLog = require("../models/RecognitionLog");
 const enrollmentService = require("./enrollmentService");
+const {
+    withFaceStatus,
+    deleteFaceDataset
+} = require("../utils/faceDataset");
 
 const createStudent = async (data) => {
 
@@ -17,16 +21,11 @@ const createStudent = async (data) => {
         throw new Error("Student already exists");
     }
 
-    // face_dataset/<roll_no>.npy is how the vision layer keys a
-    // registered face (see register_student.py / face_recognition.py).
-    // Default faceDatasetId to rollNo automatically so recognition
-    // works the moment a face is captured, without a separate manual
-    // "link the dataset ID" step that's easy to forget and leaves
-    // faceDatasetId stuck at null.
-    const payload = {
-        ...data,
-        faceDatasetId: data.faceDatasetId || data.rollNo
-    };
+    // Creating a student does NOT register a face. faceDatasetId stays
+    // empty here; whether a face exists is decided by the presence of
+    // face_dataset/<rollNo>.npy (see utils/faceDataset.js). Recognition
+    // already falls back to rollNo, so no manual linking step is needed.
+    const { faceDatasetId, ...payload } = data;
 
     const student = await Student.create(payload);
 
@@ -38,14 +37,16 @@ const createStudent = async (data) => {
         console.log("Auto-enrollment failed:", err.message);
     }
 
-    return student;
+    return withFaceStatus(student);
 };
 
 const getStudents = async () => {
 
-    return await Student.find().sort({
+    const students = await Student.find().sort({
         createdAt: -1
     });
+
+    return students.map(withFaceStatus);
 
 };
 const getStudentById = async (id) => {
@@ -56,7 +57,7 @@ const getStudentById = async (id) => {
         throw new Error("Student not found");
     }
 
-    return student;
+    return withFaceStatus(student);
 };
 
 const updateStudent = async (id, data) => {
@@ -74,7 +75,7 @@ const updateStudent = async (id, data) => {
         throw new Error("Student not found");
     }
 
-    return student;
+    return withFaceStatus(student);
 };
 
 const deleteStudent = async (id) => {
@@ -96,6 +97,9 @@ const deleteStudent = async (id) => {
         Attendance.deleteMany({ student: id }),
         RecognitionLog.deleteMany({ student: id })
     ]);
+
+    // Remove the stored face data as well
+    deleteFaceDataset(student);
 
     return student;
 };
