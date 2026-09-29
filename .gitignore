@@ -20,3 +20,5 @@ coverage/
 .vscode/
 
 face_dataset/*.npy
+
+venv/
